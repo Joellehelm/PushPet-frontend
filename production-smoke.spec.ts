@@ -2,6 +2,8 @@ import { expect, test } from "@playwright/test";
 
 const appUrl = "https://push-pet-frontend.vercel.app";
 
+test.use({ viewport: { width: 390, height: 844 } });
+
 test("production main, demo, and individual lookup do not dead-end", async ({ page }) => {
   await page.goto(`${appUrl}/?smoke=${Date.now()}`);
   await expect(page.getByRole("button", { name: "Community Pushpet", exact: true })).toBeVisible();
