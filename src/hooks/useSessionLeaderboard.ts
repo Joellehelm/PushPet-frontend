@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { accessoryFromUnlock, colorFromSeed, normalizeMood, speciesFromSeed, stageFromEvolution } from "../assets/pets/petManifest";
 import { normalizePetBackground } from "../components/PetBackgroundControls";
 import type { EquippedAccessories, PetAccessory, PetBackground, PetColor, PetMood, PetSpecies, PetStage } from "../components/pets/petTypes";
@@ -21,9 +21,23 @@ export type SessionLeaderboardEntry = {
 };
 
 const MAX_RECENT_UNIQUE = 10;
+const STORAGE_KEY = "pushpet.sessionLeaderboard.v2";
+
+function readStoredEntries() {
+  try {
+    const stored = window.localStorage.getItem(STORAGE_KEY);
+    return stored ? (JSON.parse(stored) as SessionLeaderboardEntry[]) : [];
+  } catch {
+    return [];
+  }
+}
 
 export function useSessionLeaderboard() {
-  const [entries, setEntries] = useState<SessionLeaderboardEntry[]>([]);
+  const [entries, setEntries] = useState<SessionLeaderboardEntry[]>(() => readStoredEntries());
+
+  useEffect(() => {
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(entries.slice(0, MAX_RECENT_UNIQUE)));
+  }, [entries]);
 
   function applyServerLeaderboard(serverEntries: LeaderboardEntry[] = []) {
     setEntries(

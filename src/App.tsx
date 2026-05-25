@@ -117,6 +117,12 @@ function PushpetApp({ onOpenDemo }: { onOpenDemo: () => void }) {
     window.localStorage.setItem(COMMUNITY_DESIGN_KEY, JSON.stringify(communityDesign));
   }, [communityDesign]);
 
+  useEffect(() => {
+    if (community.communityPet?.leaderboard) {
+      sessionLeaderboard.applyServerLeaderboard(community.communityPet.leaderboard);
+    }
+  }, [community.communityPet?.updated_at]);
+
   const activeUsername = pet?.username ?? null;
   const localLeader = sessionLeaderboard.entries[0] ?? null;
   const topCaretaker = community.communityPet?.top_caretaker ?? localLeader;
