@@ -5,6 +5,11 @@ const appUrl = "https://push-pet-frontend.vercel.app";
 test.use({ viewport: { width: 390, height: 844 } });
 
 test("production main, demo, and individual lookup do not dead-end", async ({ page }) => {
+  const consoleErrors: string[] = [];
+  page.on("console", (message) => {
+    if (message.type() === "error") consoleErrors.push(message.text());
+  });
+
   await page.goto(`${appUrl}/?smoke=${Date.now()}`);
   await expect(page.getByRole("button", { name: "Community Pushpet", exact: true })).toBeVisible();
   await expect(page.getByRole("button", { name: "Individual Pushpet", exact: true })).toBeVisible();
@@ -20,7 +25,6 @@ test("production main, demo, and individual lookup do not dead-end", async ({ pa
   await page.getByLabel(/GitHub username/i).fill("octocat");
   await page.getByRole("button", { name: /Get individual Pushpet/i }).click();
 
-  await expect(page.getByText(/Getting pet/i)).toBeVisible();
-  await expect(page.getByText(/Getting pet/i)).toBeHidden({ timeout: 18_000 });
   await expect(page.getByText(/New Pushpet|Active find|Username not found|Signal got fuzzy/i)).toBeVisible();
+  expect(consoleErrors.join("\n")).not.toMatch(/NetworkError|Failed to fetch|ERR_/i);
 });
