@@ -3528,6 +3528,81 @@ body.pushpet-how-it-works-page {
   }
 }
 
+.community-card .community-feed-panel {
+  grid-column: 2 !important;
+  grid-row: 5 !important;
+  min-height: 0 !important;
+  display: grid !important;
+  gap: 10px !important;
+}
+
+.community-collapsible-trigger {
+  width: 100% !important;
+  min-width: 0 !important;
+  border: 4px solid #171123 !important;
+  border-radius: 10px !important;
+  display: grid !important;
+  align-items: center !important;
+  gap: 10px !important;
+  background: #ffe85c !important;
+  color: #171123 !important;
+  box-shadow: 4px 5px 0 #171123 !important;
+  cursor: pointer !important;
+  font-family: var(--pushpet-ui-font) !important;
+  font-weight: 1000 !important;
+  text-transform: uppercase !important;
+}
+
+.caretaker-zone .top-caretaker-strip.community-collapsible-trigger {
+  grid-template-columns: auto minmax(0, 1fr) auto auto !important;
+  text-align: left !important;
+}
+
+.community-feed-trigger {
+  grid-template-columns: auto minmax(0, 1fr) auto !important;
+  min-height: 48px !important;
+  padding: 8px 12px !important;
+  text-align: left !important;
+}
+
+.community-collapsible-trigger strong,
+.community-collapsible-trigger span {
+  min-width: 0 !important;
+}
+
+.community-collapsible-toggle {
+  width: 24px !important;
+  height: 24px !important;
+  display: grid !important;
+  place-items: center !important;
+  border: 3px solid #171123 !important;
+  border-radius: 999px !important;
+  background: #ff4fb0 !important;
+  color: #fffdf4 !important;
+  line-height: 1 !important;
+  box-shadow: 2px 2px 0 #171123 !important;
+}
+
+.community-collapsible-body {
+  min-height: 0 !important;
+}
+
+.community-collapsible:not(.is-expanded) .community-collapsible-body {
+  display: none !important;
+}
+
+.community-collapsible:not(.is-expanded) {
+  min-height: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  overflow: visible !important;
+}
+
+.community-feed-panel .feed-log .section-title {
+  display: none !important;
+}
+
 /* Keep app panels reachable in narrow or short webviews. */
 @media (max-width: 1180px), (max-height: 1020px) {
   body:not(.pushpet-landing-page):not(.pushpet-how-it-works-page),
@@ -3544,7 +3619,7 @@ body.pushpet-how-it-works-page {
     min-height: 100dvh !important;
     height: auto !important;
     overflow: visible !important;
-    padding-bottom: clamp(104px, 14dvh, 148px) !important;
+    padding-bottom: clamp(18px, 4dvh, 52px) !important;
   }
 
   .locked-stage.active-community,
@@ -3578,8 +3653,17 @@ body.pushpet-how-it-works-page {
     overflow: visible !important;
   }
 
+  .community-card,
+  .community-card.is-caretaker,
+  .community-card.is-visitor {
+    grid-template-rows: auto auto auto auto minmax(0, 1fr) !important;
+    align-items: stretch !important;
+    align-content: stretch !important;
+    min-height: calc(100dvh - clamp(120px, 11dvh, 164px) - clamp(72px, 8dvh, 96px) - 54px) !important;
+  }
+
   .community-card .feed-log {
-    min-height: clamp(220px, 32dvh, 380px) !important;
+    min-height: 0 !important;
     height: auto !important;
     max-height: none !important;
     overflow: visible !important;
@@ -3593,8 +3677,39 @@ body.pushpet-how-it-works-page {
     padding-bottom: 14px !important;
   }
 
+  .community-collapsible:not(.is-expanded) {
+    min-height: 0 !important;
+    height: auto !important;
+    max-height: 58px !important;
+  }
+
+  .community-collapsible:not(.is-expanded) .community-collapsible-trigger {
+    margin: 0 !important;
+  }
+
   .community-card.is-caretaker .caretaker-zone {
     min-height: 0 !important;
+  }
+
+  .community-card .pet-stage-display {
+    grid-row: 1 / -1 !important;
+    min-height: 280px !important;
+    height: 100% !important;
+    max-height: none !important;
+  }
+
+  .community-card .community-feed-panel {
+    min-height: 0 !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    gap: 0 !important;
+    align-self: start !important;
+  }
+
+  .community-feed-trigger {
+    min-height: 44px !important;
+    padding: 6px 12px !important;
   }
 
   .caretaker-controls {

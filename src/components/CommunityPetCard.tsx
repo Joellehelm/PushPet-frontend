@@ -1,4 +1,5 @@
-import { HeartHandshake, Trophy } from "lucide-react";
+import { useEffect, useState } from "react";
+import { HeartHandshake, Radio, Trophy } from "lucide-react";
 import { normalizeColor, normalizeSpecies } from "../assets/pets/petManifest";
 import { useCommunityPet } from "../hooks/useCommunityPet";
 import type { CommunityPet } from "../types/pushpet";
@@ -37,6 +38,8 @@ export function CommunityPetCard({
   onDesignChange,
   onHatch
 }: CommunityPetCardProps) {
+  const [caretakerOpen, setCaretakerOpen] = useState(true);
+  const [feedOpen, setFeedOpen] = useState(true);
   const displayScore = design.hatched ? communityPet?.community_score ?? 0 : 0;
   const displayMood = design.hatched ? communityPet?.mood ?? "idle" : "idle";
   const displayStage = design.hatched ? communityPet?.evolution_stage ?? "egg" : "egg";
@@ -72,6 +75,20 @@ export function CommunityPetCard({
             ]
       }
     : null;
+
+  useEffect(() => {
+    const query = window.matchMedia("(max-width: 1180px), (max-height: 1020px)");
+
+    function syncCollapsedState() {
+      const shouldCollapse = query.matches;
+      setCaretakerOpen(!shouldCollapse);
+      setFeedOpen(!shouldCollapse);
+    }
+
+    syncCollapsedState();
+    query.addEventListener("change", syncCollapsedState);
+    return () => query.removeEventListener("change", syncCollapsedState);
+  }, []);
 
   return (
     <section className={`toy-panel community-card ${canCustomize ? "is-caretaker" : "is-visitor"}`}>
@@ -138,27 +155,51 @@ export function CommunityPetCard({
           {design.hatched && <PetStatsPanel pet={viewCommunityPet} mode="community" />}
 
           {design.hatched && (
-            <section className="caretaker-zone">
-              <div className="top-caretaker-strip">
+            <section className={`caretaker-zone community-collapsible ${caretakerOpen ? "is-expanded" : ""}`}>
+              <button
+                className="top-caretaker-strip community-collapsible-trigger"
+                type="button"
+                aria-expanded={caretakerOpen}
+                onClick={() => setCaretakerOpen((current) => !current)}
+              >
                 <Trophy size={17} />
                 <span>Top Caretaker</span>
                 <strong>{viewCommunityPet.top_caretaker?.username ? `@${viewCommunityPet.top_caretaker.username}` : "open slot"}</strong>
+                <span className="community-collapsible-toggle" aria-hidden="true">{caretakerOpen ? "-" : "+"}</span>
+              </button>
+              <div className="community-collapsible-body">
+                {canCustomize && activeUsername && (
+                  <CaretakerControls
+                    activeUsername={activeUsername}
+                    communityPet={viewCommunityPet}
+                    isSaving={status === "saving"}
+                    error={error}
+                    onSave={onCustomize}
+                    speciesOptions={speciesOptions}
+                    colorOptions={colorOptions}
+                  />
+                )}
               </div>
-              {canCustomize && activeUsername && (
-                <CaretakerControls
-                  activeUsername={activeUsername}
-                  communityPet={viewCommunityPet}
-                  isSaving={status === "saving"}
-                  error={error}
-                  onSave={onCustomize}
-                  speciesOptions={speciesOptions}
-                  colorOptions={colorOptions}
-                />
-              )}
             </section>
           )}
 
-          {design.hatched && <FeedLog title="Community feed" items={viewCommunityPet.feed_log} />}
+          {design.hatched && (
+            <section className={`community-feed-panel community-collapsible ${feedOpen ? "is-expanded" : ""}`}>
+              <button
+                className="community-collapsible-trigger community-feed-trigger"
+                type="button"
+                aria-expanded={feedOpen}
+                onClick={() => setFeedOpen((current) => !current)}
+              >
+                <Radio size={17} />
+                <span>Community feed</span>
+                <span className="community-collapsible-toggle" aria-hidden="true">{feedOpen ? "-" : "+"}</span>
+              </button>
+              <div className="community-collapsible-body">
+                <FeedLog title="Community feed" items={viewCommunityPet.feed_log} />
+              </div>
+            </section>
+          )}
         </>
       ) : (
         <p className="quiet-copy">{error ?? "Community Pushpet is taking a tiny nap."}</p>
