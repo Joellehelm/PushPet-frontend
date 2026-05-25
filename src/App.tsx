@@ -163,7 +163,7 @@ function PushpetApp() {
           <button className={activeView === "individual" ? "is-active" : ""} type="button" onClick={() => setActiveView("individual")}>
             Individual Pushpet
           </button>
-          <a className="how-it-works-link" href="/demo" aria-label="Open the Pushpet walkthrough">
+          <a className="how-it-works-link" href="/demo" aria-label="How it works">
             <BadgeInfo size={18} />
             How it works
           </a>
