@@ -56,7 +56,7 @@ type CommunityDesign = PetDesign & {
   hatched: boolean;
 };
 
-type ActiveView = "community" | "individual" | "rankings";
+type ActiveView = "community" | "individual" | "rankings" | "care" | "play" | "shop" | "settings";
 
 const COMMUNITY_DESIGN_KEY = "pushpet.communityDesign.v3";
 
@@ -335,6 +335,8 @@ function PushpetApp({ onOpenDemo }: { onOpenDemo: () => void }) {
             />
           </section>
         )}
+
+        {["care", "play", "shop", "settings"].includes(activeView) && <ComingSoonPanel view={activeView} />}
       </div>
 
       <nav className="bottom-dock" aria-label="Pushpet action rail">
@@ -342,15 +344,15 @@ function PushpetApp({ onOpenDemo }: { onOpenDemo: () => void }) {
           <Home size={24} />
           Home
         </button>
-        <button type="button">
+        <button className={activeView === "care" ? "is-active" : ""} type="button" onClick={() => setActiveView("care")}>
           <Heart size={24} />
           Care
         </button>
-        <button type="button">
+        <button className={activeView === "play" ? "is-active" : ""} type="button" onClick={() => setActiveView("play")}>
           <Gamepad2 size={24} />
           Play
         </button>
-        <button type="button">
+        <button className={activeView === "shop" ? "is-active" : ""} type="button" onClick={() => setActiveView("shop")}>
           <ShoppingCart size={24} />
           Shop
         </button>
@@ -358,12 +360,24 @@ function PushpetApp({ onOpenDemo }: { onOpenDemo: () => void }) {
           <Trophy size={24} />
           Rankings
         </button>
-        <button type="button">
+        <button className={activeView === "settings" ? "is-active" : ""} type="button" onClick={() => setActiveView("settings")}>
           <Settings size={24} />
           Settings
         </button>
       </nav>
     </main>
+  );
+}
+
+function ComingSoonPanel({ view }: { view: ActiveView }) {
+  const label = view.charAt(0).toUpperCase() + view.slice(1);
+
+  return (
+    <section className="coming-soon-panel">
+      <span className="sticker-label">{label}</span>
+      <h2>Coming soon</h2>
+      <p>This part of Pushpet is being tuned up next.</p>
+    </section>
   );
 }
 
@@ -396,6 +410,7 @@ function IndividualWorkspace({
   isDormant,
   isDegraded,
   design,
+  displayName,
   hatchDesign,
   hasHatched,
   equippedAccessories,
@@ -404,10 +419,29 @@ function IndividualWorkspace({
   onHatchDesignChange,
   onHatch,
   onToggleAccessory,
-  onBackgroundChange
+  onBackgroundChange,
+  onCustomize
 }: IndividualWorkspaceProps) {
   const [expandedPanel, setExpandedPanel] = useState<"place" | "accessories" | "feed" | null>(null);
+  const [draftName, setDraftName] = useState(displayName);
+  const [draftDesign, setDraftDesign] = useState(design);
   const lookupDisabled = status === "loading" || !username.trim();
+  const pageTitle = pet && hasHatched ? draftName.trim() || `${pet.username}'s Pushpet` : "Get individual Pushpet";
+
+  useEffect(() => {
+    setDraftName(displayName);
+    setDraftDesign(design);
+  }, [displayName, design.species, design.color, design.background]);
+
+  function saveCustomization(nextName = draftName, nextDesign = draftDesign) {
+    if (!pet || !hasHatched) return;
+    void onCustomize({ displayName: nextName, design: nextDesign });
+  }
+
+  function updateDraftDesign(nextDesign: PetDesign) {
+    setDraftDesign(nextDesign);
+    saveCustomization(draftName, nextDesign);
+  }
   let workspaceClass = "is-empty";
   let stage = (
     <PetStageDisplay
@@ -446,6 +480,7 @@ function IndividualWorkspace({
         species={design.species}
         color={design.color}
         background={design.background}
+        showPet={false}
       />
     );
     controls = (
@@ -471,6 +506,7 @@ function IndividualWorkspace({
         species={design.species}
         color={design.color}
         background={design.background}
+        showPet={false}
       />
     );
     controls = (
@@ -495,6 +531,7 @@ function IndividualWorkspace({
         species={design.species}
         color={design.color}
         background={design.background}
+        showPet={false}
       />
     );
     controls = (
@@ -611,6 +648,51 @@ function IndividualWorkspace({
             <span className="eyebrow status-corner">{isDormant ? "Dormant find" : "Active find"}</span>
             {isDegraded && <span className="degraded-sticker">cached</span>}
           </div>
+          <form
+            className="individual-customizer"
+            onSubmit={(event) => {
+              event.preventDefault();
+              saveCustomization();
+            }}
+          >
+            <label>
+              Name
+              <input
+                value={draftName}
+                onChange={(event) => setDraftName(event.target.value)}
+                onBlur={() => saveCustomization()}
+                maxLength={28}
+                placeholder={`${pet.username}'s Pushpet`}
+              />
+            </label>
+            <label>
+              Type
+              <select
+                value={draftDesign.species}
+                onChange={(event) => updateDraftDesign({ ...draftDesign, species: event.target.value as PetSpecies })}
+              >
+                {speciesOptions.map((option) => (
+                  <option value={option.value} key={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              Color
+              <select
+                value={draftDesign.color}
+                onChange={(event) => updateDraftDesign({ ...draftDesign, color: event.target.value as PetColor })}
+              >
+                {colorOptions.map((option) => (
+                  <option value={option.value} key={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <button type="submit">Save</button>
+          </form>
         </section>
         <div className={`individual-panel-stack ${expandedPanel ? "has-expanded" : ""}`}>
           <CollapsiblePanel
@@ -619,7 +701,14 @@ function IndividualWorkspace({
             expandedPanel={expandedPanel}
             onToggle={setExpandedPanel}
           >
-            <PetBackgroundControls value={normalizePetBackground(design.background)} onChange={onBackgroundChange} title="Pet place" />
+            <PetBackgroundControls
+              value={normalizePetBackground(draftDesign.background)}
+              onChange={(background) => {
+                updateDraftDesign({ ...draftDesign, background });
+                onBackgroundChange(background);
+              }}
+              title="Pet place"
+            />
           </CollapsiblePanel>
           <CollapsiblePanel
             id="accessories"
@@ -647,7 +736,7 @@ function IndividualWorkspace({
       <div className="individual-page-heading">
         <div>
           <span className="sticker-label">Individual Pushpet</span>
-          <h2>Get individual Pushpet</h2>
+          <h2>{pageTitle}</h2>
         </div>
         <ToyBrick size={28} />
       </div>
