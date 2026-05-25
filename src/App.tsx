@@ -58,14 +58,27 @@ function readCommunityDesign(): CommunityDesign {
 }
 
 function App() {
-  if (window.location.pathname === "/demo") {
-    return <DemoWalkthrough />;
+  const [path, setPath] = useState(window.location.pathname);
+
+  useEffect(() => {
+    const handlePopState = () => setPath(window.location.pathname);
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
+
+  function navigate(nextPath: string) {
+    window.history.pushState(null, "", nextPath);
+    setPath(nextPath);
   }
 
-  return <PushpetApp />;
+  if (path === "/demo") {
+    return <DemoWalkthrough onBack={() => navigate("/")} />;
+  }
+
+  return <PushpetApp onOpenDemo={() => navigate("/demo")} />;
 }
 
-function PushpetApp() {
+function PushpetApp({ onOpenDemo }: { onOpenDemo: () => void }) {
   const [username, setUsername] = useState("");
   const [activeView, setActiveView] = useState<"community" | "individual">("community");
   const [loadingUsername, setLoadingUsername] = useState<string | null>(null);
@@ -163,10 +176,10 @@ function PushpetApp() {
           <button className={activeView === "individual" ? "is-active" : ""} type="button" onClick={() => setActiveView("individual")}>
             Individual Pushpet
           </button>
-          <a className="how-it-works-link" href="/demo" aria-label="How it works">
+          <button className="how-it-works-link" type="button" onClick={onOpenDemo} aria-label="How it works">
             <BadgeInfo size={18} />
             How it works
-          </a>
+          </button>
         </nav>
       </header>
 

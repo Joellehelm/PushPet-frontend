@@ -103,15 +103,15 @@ const featureCards = [
   }
 ];
 
-export function DemoWalkthrough() {
+export function DemoWalkthrough({ onBack }: { onBack: () => void }) {
   return (
     <main className="demo-shell">
       <header className="demo-header">
         <img src="/assets/brand/pushpet-logo.png" alt="Pushpet" className="brand-logo" />
-        <a href="/" className="demo-back-link">
+        <button type="button" className="demo-back-link" onClick={onBack}>
           <ArrowLeft size={18} />
           Back
-        </a>
+        </button>
       </header>
 
       <section className="demo-hero toy-panel">
