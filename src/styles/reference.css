@@ -3527,3 +3527,108 @@ body.pushpet-how-it-works-page {
     border-width: 4px !important;
   }
 }
+
+/* Keep app panels reachable in narrow or short webviews. */
+@media (max-width: 1180px), (max-height: 1020px) {
+  body:not(.pushpet-landing-page):not(.pushpet-how-it-works-page),
+  body:not(.pushpet-landing-page):not(.pushpet-how-it-works-page) #root {
+    width: 100% !important;
+    min-height: 100dvh !important;
+    height: auto !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  body:not(.pushpet-landing-page):not(.pushpet-how-it-works-page) .app-shell {
+    min-height: 100dvh !important;
+    height: auto !important;
+    overflow: visible !important;
+    padding-bottom: clamp(104px, 14dvh, 148px) !important;
+  }
+
+  .locked-stage.active-community,
+  .locked-stage.active-individual,
+  .community-stage,
+  .individual-workspace,
+  .individual-stage-column,
+  .individual-control-column {
+    min-height: 0 !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  .community-card,
+  .community-card.is-caretaker,
+  .community-card.is-visitor,
+  .caretaker-zone,
+  .caretaker-controls,
+  .individual-card,
+  .individual-summary-card,
+  .individual-hatch-box,
+  .individual-panel-stack,
+  .individual-panel-stack.has-expanded,
+  .individual-collapsible,
+  .individual-collapsible.is-expanded,
+  .individual-collapsible-body {
+    min-height: 0 !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  .community-card .feed-log {
+    min-height: clamp(220px, 32dvh, 380px) !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  .community-card .feed-stack {
+    min-height: 180px !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    padding-bottom: 14px !important;
+  }
+
+  .community-card.is-caretaker .caretaker-zone {
+    min-height: 0 !important;
+  }
+
+  .caretaker-controls {
+    padding: 12px !important;
+  }
+
+  .caretaker-controls form {
+    grid-template-columns: repeat(auto-fit, minmax(min(210px, 100%), 1fr)) !important;
+    grid-auto-rows: auto !important;
+    align-items: stretch !important;
+  }
+
+  .caretaker-controls button {
+    grid-column: 1 / -1 !important;
+    min-height: 48px !important;
+  }
+
+  .individual-control-column {
+    padding-right: 0 !important;
+  }
+
+  .individual-stage-column .pet-stage-display {
+    min-height: clamp(300px, 48dvh, 520px) !important;
+  }
+
+  .individual-panel-stack {
+    padding-bottom: 12px !important;
+  }
+
+  .individual-collapsible.is-expanded {
+    flex: 0 0 auto !important;
+  }
+
+  .individual-collapsible-body {
+    flex: none !important;
+  }
+}
