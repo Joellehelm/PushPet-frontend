@@ -142,10 +142,14 @@ function PushpetApp() {
     if (!pet) return;
 
     individualPushpets.updateAccessorySlot(pet.username, slot, accessory);
-    const response = await updatePetEquipment(pet.username, { slot, accessory });
-    const record = individualPushpets.upsert(response.pushpet);
-    setEquippedAccessories(record.equipped);
-    sessionLeaderboard.applyServerLeaderboard(response.leaderboard);
+    try {
+      const response = await updatePetEquipment(pet.username, { slot, accessory });
+      const record = individualPushpets.upsert(response.pushpet);
+      setEquippedAccessories(record.equipped);
+      sessionLeaderboard.applyServerLeaderboard(response.leaderboard);
+    } catch {
+      // Keep the optimistic equipment change when Render is waking up.
+    }
   }
 
   return (
