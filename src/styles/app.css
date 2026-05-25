@@ -1942,3 +1942,289 @@ body::after {
     conic-gradient(from 45deg at 8% 14%, rgba(156, 255, 61, 0.28) 0 25%, transparent 0 100%),
     linear-gradient(180deg, #fff9da, #ffeaf5 54%, #e9fcff);
 }
+
+/* Bright 2026 Tamagotchi-evolved shell and walkthrough. */
+body {
+  background:
+    linear-gradient(135deg, transparent 0 16%, #ff4fb0 16% 22%, transparent 22% 100%),
+    linear-gradient(38deg, transparent 0 70%, #00d8ff 70% 76%, transparent 76% 100%),
+    conic-gradient(from 45deg at 12% 18%, #ffe23f 0 25%, transparent 0 100%),
+    conic-gradient(from 45deg at 86% 16%, #9cff3d 0 25%, transparent 0 100%),
+    conic-gradient(from 225deg at 90% 84%, #ff7ac8 0 25%, transparent 0 100%),
+    conic-gradient(from 45deg at 18% 82%, #00e6f2 0 25%, transparent 0 100%),
+    linear-gradient(180deg, #fff173 0%, #ff8ccc 30%, #59edff 66%, #86ff71 100%);
+}
+
+body::before {
+  opacity: 0.96;
+  background:
+    repeating-conic-gradient(#171123 0 25%, #fff8dd 0 50%) 0 0 / 56px 56px no-repeat,
+    repeating-conic-gradient(#fff8dd 0 25%, #171123 0 50%) 100% 0 / 62px 62px no-repeat,
+    linear-gradient(45deg, transparent 0 44%, #ff2d8d 44% 56%, transparent 56%) 12% 76% / 130px 130px no-repeat,
+    linear-gradient(135deg, transparent 0 44%, #ffe23f 44% 56%, transparent 56%) 86% 76% / 128px 128px no-repeat,
+    conic-gradient(from 45deg at 50% 50%, #7c4dff 0 25%, transparent 0 100%) 72% 46% / 48px 48px no-repeat,
+    conic-gradient(from 45deg at 50% 50%, #ff8a24 0 25%, transparent 0 100%) 27% 42% / 44px 44px no-repeat,
+    linear-gradient(90deg, rgba(255, 255, 255, 0.38), transparent 24% 76%, rgba(255, 255, 255, 0.32));
+}
+
+body::after {
+  opacity: 0.46;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.48), transparent 42%),
+    conic-gradient(from 45deg at 50% 50%, rgba(255, 255, 255, 0.2) 0 25%, transparent 0 100%) 50% 50% / 34px 34px;
+}
+
+.app-shell::before,
+.demo-shell::before {
+  content: "";
+  position: fixed;
+  inset: 8px;
+  z-index: -1;
+  pointer-events: none;
+  border: 5px solid rgba(255, 255, 255, 0.68);
+  border-radius: clamp(22px, 4vw, 46px);
+  box-shadow:
+    inset 0 0 0 4px rgba(23, 17, 35, 0.36),
+    inset 0 0 0 11px rgba(255, 79, 176, 0.2),
+    0 0 0 3px rgba(0, 230, 242, 0.58);
+}
+
+.top-marquee,
+.demo-header {
+  background:
+    repeating-conic-gradient(from 45deg, rgba(23, 17, 35, 0.09) 0 25%, transparent 0 50%) 100% 0 / 34px 34px,
+    linear-gradient(90deg, #fffbd0 0 40%, #a9fbff 40% 64%, #ffe1f5 64% 100%);
+}
+
+.app-nav {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.app-nav button,
+.app-nav a {
+  min-height: 50px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 3px solid var(--ink);
+  border-radius: 15px;
+  padding: 0 10px;
+  background: linear-gradient(180deg, #fff 0 48%, #fff1c8 49% 100%);
+  color: var(--ink);
+  font-size: clamp(0.86rem, 2.6vw, 1.08rem);
+  font-weight: 1000;
+  line-height: 1.02;
+  text-align: center;
+  text-decoration: none;
+  box-shadow: 3px 4px 0 var(--ink), inset 0 -5px 0 rgba(23, 17, 35, 0.13);
+}
+
+.app-nav a {
+  background: linear-gradient(180deg, #9cff3d 0, #54f0b4 100%);
+}
+
+.app-nav a:active {
+  transform: translate(2px, 3px);
+  box-shadow: 2px 2px 0 var(--ink);
+}
+
+.demo-shell {
+  position: relative;
+  width: min(100%, 1220px);
+  min-height: 100dvh;
+  height: 100dvh;
+  margin: 0 auto;
+  padding: clamp(8px, 2vw, 18px);
+  display: grid;
+  gap: 12px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.demo-header {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  min-height: 118px;
+  border-width: 6px;
+  box-shadow:
+    0 8px 0 #05020d,
+    0 15px 0 #ff4fb0,
+    0 22px 0 rgba(0, 230, 242, 0.48),
+    0 28px 34px rgba(0, 0, 0, 0.26),
+    inset 0 -8px 0 rgba(23, 17, 35, 0.16);
+}
+
+.demo-back-link {
+  background: linear-gradient(180deg, #9cff3d, #54f0b4);
+}
+
+.demo-hero {
+  grid-template-columns: 1fr;
+  min-height: 520px;
+  padding: 14px;
+  align-content: start;
+  overflow: visible;
+}
+
+.demo-copy {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+}
+
+.demo-copy h1 {
+  max-width: 720px;
+  margin: 8px 0;
+  font-size: clamp(2.6rem, 14vw, 6rem);
+  letter-spacing: 0;
+  text-shadow:
+    4px 0 0 #00e6f2,
+    7px 5px 0 #ff4fb0;
+}
+
+.demo-copy p,
+.demo-step p,
+.demo-system-card p,
+.demo-table-card p,
+.demo-scoreboard p {
+  color: #423852;
+  font-weight: 900;
+  line-height: 1.42;
+}
+
+.demo-pets {
+  min-height: 190px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.38), transparent 38%),
+    linear-gradient(180deg, #72e8ff 0 58%, #8dff63 58% 100%);
+}
+
+.demo-steps,
+.demo-feature-grid,
+.demo-deep-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.demo-step,
+.demo-system-card,
+.demo-table-card {
+  align-content: start;
+  gap: 8px;
+}
+
+.demo-system-card {
+  display: grid;
+}
+
+.demo-step h2,
+.demo-system-card h2,
+.demo-table-card h2,
+.demo-scoreboard h2 {
+  margin: 0;
+  font-size: clamp(1.35rem, 7vw, 2rem);
+  line-height: 0.95;
+}
+
+.demo-table {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.demo-table-row {
+  display: grid;
+  grid-template-columns: minmax(92px, 0.38fr) minmax(0, 1fr);
+  gap: 8px;
+  align-items: center;
+  padding: 9px;
+  border: 3px solid var(--ink);
+  border-radius: 14px;
+  background: linear-gradient(135deg, #fff 0 65%, #e9fcff 65%);
+  box-shadow: 3px 3px 0 var(--ink);
+}
+
+.demo-table-row strong {
+  font-size: 0.9rem;
+  text-transform: uppercase;
+}
+
+.demo-table-row span {
+  color: #423852;
+  font-weight: 850;
+}
+
+.demo-scoreboard {
+  align-items: flex-start;
+  background:
+    conic-gradient(from 45deg at 92% 12%, rgba(255, 79, 176, 0.25) 0 25%, transparent 0 100%),
+    linear-gradient(135deg, #fff7ce, #dffcff);
+}
+
+@media (max-width: 520px) {
+  .top-marquee {
+    min-height: 154px;
+    grid-template-rows: 72px auto;
+  }
+
+  .app-nav {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .app-nav a {
+    grid-column: 1 / -1;
+    min-height: 42px;
+  }
+
+  .app-nav button,
+  .app-nav a {
+    font-size: 0.92rem;
+  }
+
+  .demo-header {
+    min-height: 128px;
+    grid-template-columns: 1fr;
+    justify-items: center;
+    padding: 10px;
+  }
+
+  .demo-header .brand-logo {
+    height: 72px;
+    max-width: 92vw;
+  }
+
+  .demo-back-link {
+    min-height: 42px;
+  }
+
+  .demo-pets {
+    min-height: 182px;
+    gap: 0;
+  }
+
+  .demo-hero {
+    min-height: 560px;
+  }
+
+  .demo-table-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (min-width: 760px) {
+  .demo-hero {
+    grid-template-columns: minmax(0, 0.9fr) minmax(300px, 1fr);
+    min-height: 330px;
+  }
+
+  .demo-feature-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .demo-deep-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

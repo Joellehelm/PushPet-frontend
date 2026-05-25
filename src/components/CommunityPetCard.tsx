@@ -94,7 +94,7 @@ export function CommunityPetCard({
             outfit={displayOutfit}
             species={design.species}
             color={design.color}
-            size={300}
+            size={design.hatched ? 300 : 256}
           />
 
           <div className="community-identity">

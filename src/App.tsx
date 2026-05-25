@@ -1,5 +1,5 @@
 import { FormEvent, useEffect, useState } from "react";
-import { AlertTriangle, ArrowRight, Github, Loader2, RotateCw, Sparkles, ToyBrick } from "lucide-react";
+import { AlertTriangle, ArrowRight, BadgeInfo, Github, Loader2, RotateCw, Sparkles, ToyBrick } from "lucide-react";
 import { ActivitySummary } from "./components/ActivitySummary";
 import { CommunityPetCard } from "./components/CommunityPetCard";
 import { FeedLog } from "./components/FeedLog";
@@ -159,6 +159,10 @@ function PushpetApp() {
           <button className={activeView === "individual" ? "is-active" : ""} type="button" onClick={() => setActiveView("individual")}>
             Individual Pushpet
           </button>
+          <a className="how-it-works-link" href="/demo" aria-label="Open the Pushpet walkthrough">
+            <BadgeInfo size={18} />
+            How it works
+          </a>
         </nav>
       </header>
 
