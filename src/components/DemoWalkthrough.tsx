@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import {
   BadgeInfo,
   Cat,
@@ -107,8 +108,13 @@ const featureCards = [
 ];
 
 export function DemoWalkthrough({ onBack }: { onBack: () => void }) {
+  useEffect(() => {
+    document.body.classList.add("pushpet-how-it-works-page");
+    return () => document.body.classList.remove("pushpet-how-it-works-page");
+  }, []);
+
   return (
-  <main className="app-shell demo-shell how-it-works-shell">
+    <main className="app-shell demo-shell how-it-works-shell">
       <div className="demo-pet-preloads" aria-hidden="true">
         <img src="/assets/pets/goat_dragon-base.png" alt="" />
         <img src="/assets/pets/goat_dragon-accessories.png?v=placement-20260525" alt="" />
@@ -154,9 +160,9 @@ export function DemoWalkthrough({ onBack }: { onBack: () => void }) {
               </p>
             </div>
             <div className="demo-pets" aria-hidden="true">
-              <PetRenderer species="goat_dragon" stage="baby" mood="happy" color="purple" accessory="ruby_crown" size={96} decorative />
-              <PetRenderer species="raccoon" stage="adolescent" mood="hyped" color="pink" accessory="javascript_shades" size={96} decorative />
-              <PetRenderer species="star_axolotl" stage="adult" mood="happy" color="blue" accessory="typescript_visor" size={96} decorative />
+              <PetRenderer species="goat_dragon" stage="baby" mood="happy" color="purple" accessory="none" size={96} decorative />
+              <PetRenderer species="raccoon" stage="adolescent" mood="hyped" color="pink" accessory="none" size={96} decorative />
+              <PetRenderer species="star_axolotl" stage="adult" mood="happy" color="blue" accessory="none" size={96} decorative />
             </div>
           </section>
 

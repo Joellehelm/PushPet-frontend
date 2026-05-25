@@ -1173,3 +1173,31 @@ body {
     overflow: visible !important;
   }
 }
+
+body.pushpet-how-it-works-page,
+body.pushpet-how-it-works-page #root {
+  min-height: 100dvh !important;
+  height: auto !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  overscroll-behavior-y: auto !important;
+  -webkit-overflow-scrolling: touch;
+}
+
+body.pushpet-how-it-works-page .how-it-works-shell {
+  height: auto !important;
+  min-height: 100dvh !important;
+  overflow: visible !important;
+}
+
+body.pushpet-how-it-works-page .how-it-works-shell .demo-stage,
+body.pushpet-how-it-works-page .how-it-works-shell .demo-content-panel {
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+body.pushpet-how-it-works-page .how-it-works-shell .demo-dock {
+  position: static !important;
+}
