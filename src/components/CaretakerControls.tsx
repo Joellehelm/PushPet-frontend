@@ -1,9 +1,9 @@
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { Cat, Image, Paintbrush, Palette, Shirt } from "lucide-react";
 import { LANGUAGE_TO_ACCESSORY, accessoryFromUnlock, petSpeciesLabel } from "../assets/pets/petManifest";
 import { normalizePetBackground, petBackgroundOptions } from "./PetBackgroundControls";
 import type { CommunityCustomizationInput, CommunityPet } from "../types/pushpet";
-import type { PetColor, PetSpecies } from "./pets/petTypes";
+import type { PetBackground, PetColor, PetSpecies } from "./pets/petTypes";
 
 type CaretakerControlsProps = {
   activeUsername: string;
@@ -24,12 +24,12 @@ export function CaretakerControls({
   speciesOptions,
   colorOptions
 }: CaretakerControlsProps) {
-  const [name, setName] = useState("");
-  const [title, setTitle] = useState("");
-  const [species, setSpecies] = useState("");
-  const [color, setColor] = useState("");
-  const [outfit, setOutfit] = useState("");
-  const [environment, setEnvironment] = useState("");
+  const [name, setName] = useState(communityPet.featured_name);
+  const [title, setTitle] = useState(communityPet.display_title);
+  const [species, setSpecies] = useState(communityPet.species ?? "goat_dragon");
+  const [color, setColor] = useState(communityPet.color ?? "purple");
+  const [outfit, setOutfit] = useState(communityPet.outfit);
+  const [environment, setEnvironment] = useState<PetBackground>(normalizePetBackground(communityPet.environment));
   const wearableOutfits = communityPet.unlocked_outfits
     .map((unlock) => ({
       ...unlock,
@@ -37,10 +37,21 @@ export function CaretakerControls({
     }))
     .filter((unlock, index, allUnlocks) => unlock.accessory !== "none" && allUnlocks.findIndex((item) => item.accessory === unlock.accessory) === index);
   const hasCaretakerCrown = wearableOutfits.some((unlock) => unlock.accessory === "caretaker_crown");
-  const currentBackground = petBackgroundOptions.find((option) => option.value === normalizePetBackground(communityPet.environment))?.label ?? "Garden";
-  const currentSpecies = petSpeciesLabel(communityPet.species);
-  const currentColor = colorOptions.find((option) => option.value === communityPet.color)?.label ?? "Purple";
-  const currentOutfit = wearableOutfits.find((unlock) => unlock.accessory === communityPet.outfit)?.label ?? (communityPet.outfit === "none" ? "No outfit" : "Caretaker Crown");
+  useEffect(() => {
+    setName(communityPet.featured_name);
+    setTitle(communityPet.display_title);
+    setSpecies(communityPet.species ?? "goat_dragon");
+    setColor(communityPet.color ?? "purple");
+    setOutfit(communityPet.outfit);
+    setEnvironment(normalizePetBackground(communityPet.environment));
+  }, [
+    communityPet.featured_name,
+    communityPet.display_title,
+    communityPet.species,
+    communityPet.color,
+    communityPet.outfit,
+    communityPet.environment
+  ]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -55,12 +66,12 @@ export function CaretakerControls({
     });
 
     if (saved) {
-      setName("");
-      setTitle("");
-      setSpecies("");
-      setColor("");
-      setOutfit("");
-      setEnvironment("");
+      setName(saved.featured_name);
+      setTitle(saved.display_title);
+      setSpecies(saved.species ?? "goat_dragon");
+      setColor(saved.color ?? "purple");
+      setOutfit(saved.outfit);
+      setEnvironment(normalizePetBackground(saved.environment));
     }
   }
 
@@ -77,7 +88,7 @@ export function CaretakerControls({
             id="community-pet-title"
             value={title}
             onChange={(event) => setTitle(event.target.value)}
-            placeholder={communityPet.display_title}
+            placeholder="Community Pushpet"
           />
         </div>
         <div className="caretaker-field">
@@ -86,7 +97,7 @@ export function CaretakerControls({
             id="community-pet-name"
             value={name}
             onChange={(event) => setName(event.target.value)}
-            placeholder={communityPet.featured_name}
+            placeholder="Pushpet Prime"
           />
         </div>
         <div className="caretaker-field">
@@ -95,7 +106,6 @@ export function CaretakerControls({
             Type
           </label>
           <select id="community-pet-species" value={species} onChange={(event) => setSpecies(event.target.value)}>
-            <option value="">{currentSpecies}</option>
             {speciesOptions.map((option) => (
               <option value={option.value} key={option.value}>
                 {option.label}
@@ -109,7 +119,6 @@ export function CaretakerControls({
             Color
           </label>
           <select id="community-pet-color" value={color} onChange={(event) => setColor(event.target.value)}>
-            <option value="">{currentColor}</option>
             {colorOptions.map((option) => (
               <option value={option.value} key={option.value}>
                 {option.label}
@@ -123,8 +132,7 @@ export function CaretakerControls({
             Outfit
           </label>
           <select id="community-pet-outfit" value={outfit} onChange={(event) => setOutfit(event.target.value)}>
-            <option value="">{currentOutfit}</option>
-            <option value="none">Remove accessory</option>
+            <option value="none">No outfit</option>
             {wearableOutfits.map((unlock) => (
               <option value={unlock.accessory} key={unlock.accessory}>
                 {unlock.label}
@@ -138,8 +146,7 @@ export function CaretakerControls({
             <Image size={15} />
             Background
           </label>
-          <select id="community-pet-environment" value={environment} onChange={(event) => setEnvironment(event.target.value)}>
-            <option value="">{currentBackground}</option>
+          <select id="community-pet-environment" value={environment} onChange={(event) => setEnvironment(event.target.value as PetBackground)}>
             {petBackgroundOptions.map((option) => (
               <option value={option.value} key={option.value}>
                 {option.label}
