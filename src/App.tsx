@@ -145,6 +145,8 @@ function PushpetApp({ initialView = "community", onOpenDemo }: { initialView?: A
   const canCustomize = Boolean(
     community.communityPet && topCaretakerUsername && (!activeUsername || activeUserIsTopCaretaker)
   );
+  const activePushpetRecord = pet ? individualPushpets.findRecord(pet.username) : null;
+  const hasHatchedActivePet = Boolean(pet && (activePushpetRecord || activePetDesign));
 
   async function runLookup(nextUsername: string) {
     const cleanUsername = nextUsername.trim();
@@ -341,7 +343,7 @@ function PushpetApp({ initialView = "community", onOpenDemo }: { initialView?: A
             design={activePetDesign ?? hatchDesign}
             displayName={activePetName}
             hatchDesign={hatchDesign}
-            hasHatched={Boolean(pet && individualPushpets.findRecord(pet.username))}
+            hasHatched={hasHatchedActivePet}
             equippedAccessories={equippedAccessories}
             onUsernameChange={setUsername}
             onLookup={handleLookup}

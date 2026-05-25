@@ -3764,4 +3764,33 @@ body.pushpet-how-it-works-page {
   .individual-collapsible-body {
     flex: none !important;
   }
+
+  .community-card .caretaker-zone.community-collapsible:not(.is-expanded),
+  .community-card .community-feed-panel.community-collapsible:not(.is-expanded) {
+    min-height: 0 !important;
+    height: 44px !important;
+    max-height: 44px !important;
+    display: block !important;
+    align-self: start !important;
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    overflow: visible !important;
+  }
+
+  .community-card .caretaker-zone.community-collapsible:not(.is-expanded) .community-collapsible-trigger,
+  .community-card .community-feed-panel.community-collapsible:not(.is-expanded) .community-collapsible-trigger {
+    min-height: 44px !important;
+    height: 44px !important;
+    max-height: 44px !important;
+    margin: 0 !important;
+    padding: 6px 12px !important;
+  }
+
+  .community-card .community-collapsible:not(.is-expanded) .community-collapsible-body {
+    display: none !important;
+    height: 0 !important;
+    max-height: 0 !important;
+    overflow: hidden !important;
+  }
 }
