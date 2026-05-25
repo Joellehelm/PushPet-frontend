@@ -3,10 +3,11 @@ import { fetchCommunityPet, updateCommunityPetCustomization } from "../api/pushp
 import type { CommunityCustomizationInput, CommunityPet } from "../types/pushpet";
 
 export type CommunityStatus = "loading" | "ready" | "error" | "saving";
+const STORAGE_KEY = "pushpet.communityPet.v1";
 
 export function useCommunityPet() {
   const [status, setStatus] = useState<CommunityStatus>("loading");
-  const [communityPet, setCommunityPet] = useState<CommunityPet | null>(defaultCommunityPet());
+  const [communityPet, setCommunityPet] = useState<CommunityPet | null>(() => readStoredCommunityPet() ?? defaultCommunityPet());
   const [error, setError] = useState<string | null>(null);
 
   const refresh = useCallback(async () => {
@@ -15,9 +16,10 @@ export function useCommunityPet() {
     try {
       const response = await fetchCommunityPet();
       setCommunityPet(response.community_pet);
+      writeStoredCommunityPet(response.community_pet);
       setStatus("ready");
     } catch (caught) {
-      setCommunityPet((current) => current ?? defaultCommunityPet());
+      setCommunityPet((current) => current ?? readStoredCommunityPet() ?? defaultCommunityPet());
       setError(caught instanceof Error ? caught.message : "Community Pushpet could not load.");
       setStatus("error");
     }
@@ -29,6 +31,7 @@ export function useCommunityPet() {
 
   function applyCommunityPet(nextPet: CommunityPet) {
     setCommunityPet(nextPet);
+    writeStoredCommunityPet(nextPet);
     setStatus("ready");
   }
 
@@ -38,6 +41,7 @@ export function useCommunityPet() {
     try {
       const response = await updateCommunityPetCustomization(input);
       setCommunityPet(response.community_pet);
+      writeStoredCommunityPet(response.community_pet);
       setStatus("ready");
       return response.community_pet;
     } catch (caught) {
@@ -55,6 +59,23 @@ export function useCommunityPet() {
     applyCommunityPet,
     customize
   };
+}
+
+function readStoredCommunityPet() {
+  if (typeof window === "undefined") return null;
+
+  try {
+    const stored = window.localStorage.getItem(STORAGE_KEY);
+    return stored ? (JSON.parse(stored) as CommunityPet) : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeStoredCommunityPet(communityPet: CommunityPet) {
+  if (typeof window === "undefined") return;
+
+  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(communityPet));
 }
 
 function defaultCommunityPet(): CommunityPet {

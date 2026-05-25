@@ -4,6 +4,8 @@ import { normalizePetBackground } from "../components/PetBackgroundControls";
 import type { EquippedAccessories, PetAccessory, PetAccessorySlot, PetBackground, PetColor, PetSpecies } from "../components/pets/petTypes";
 import type { PushpetRecord } from "../types/pushpet";
 
+const STORAGE_KEY = "pushpet.individualPushpets.v1";
+
 export type IndividualPushpetRecord = {
   username: string;
   display_name: string | null;
@@ -28,8 +30,28 @@ function normalizeRecord(record: PushpetRecord): IndividualPushpetRecord {
   };
 }
 
+function readStoredRecords() {
+  if (typeof window === "undefined") return [];
+
+  try {
+    const stored = window.localStorage.getItem(STORAGE_KEY);
+    if (!stored) return [];
+    const parsed = JSON.parse(stored) as PushpetRecord[];
+    if (!Array.isArray(parsed)) return [];
+    return parsed.map(normalizeRecord);
+  } catch {
+    return [];
+  }
+}
+
+function writeStoredRecords(records: IndividualPushpetRecord[]) {
+  if (typeof window === "undefined") return;
+
+  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+}
+
 export function useIndividualPushpets() {
-  const [records, setRecords] = useState<IndividualPushpetRecord[]>([]);
+  const [records, setRecords] = useState<IndividualPushpetRecord[]>(() => readStoredRecords());
 
   function findRecord(username?: string | null) {
     const key = username?.trim().toLowerCase();
@@ -41,7 +63,9 @@ export function useIndividualPushpets() {
     const record = normalizeRecord(recordPayload);
     setRecords((current) => {
       const withoutExisting = current.filter((item) => item.username.toLowerCase() !== record.username.toLowerCase());
-      return [record, ...withoutExisting];
+      const nextRecords = [record, ...withoutExisting];
+      writeStoredRecords(nextRecords);
+      return nextRecords;
     });
 
     return record;

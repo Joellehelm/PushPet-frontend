@@ -14,13 +14,13 @@ export function LeaderboardPanel({ entries, onSelect, loadingUsername }: Leaderb
     <section className="toy-panel leaderboard-panel">
       <div className="panel-heading">
         <div>
-          <span className="eyebrow">Session scoreboard</span>
-          <h2>Local leaderboard</h2>
+          <span className="eyebrow">Overall rankings</span>
+          <h2>Community leaderboard</h2>
         </div>
         <Crown size={22} />
       </div>
       {entries.length === 0 ? (
-        <p className="quiet-copy">Lookups land here for quick rematches.</p>
+        <p className="quiet-copy leaderboard-empty-copy">Community rankings appear after GitHub lookups.</p>
       ) : (
         <div className="leaderboard-list">
           {entries.map((entry, index) => (
@@ -30,7 +30,7 @@ export function LeaderboardPanel({ entries, onSelect, loadingUsername }: Leaderb
               type="button"
               onClick={() => onSelect(entry)}
               aria-label={`Reload @${entry.username}, score ${entry.pet_score}`}
-            >
+              >
               <span className="rank-token">{index + 1}</span>
               <span className="leader-pet-thumb" aria-hidden="true">
                 <PetRenderer
@@ -44,8 +44,14 @@ export function LeaderboardPanel({ entries, onSelect, loadingUsername }: Leaderb
                   decorative
                 />
               </span>
-              <span className="leader-name">@{entry.username}</span>
-              <strong>{entry.pet_score}</strong>
+              <span className="leader-copy">
+                <span className="leader-name">@{entry.username}</span>
+                <span className="leader-subcopy">Community rank #{index + 1}</span>
+              </span>
+              <span className="leader-score">
+                <strong>{entry.pet_score}</strong>
+                <small>score</small>
+              </span>
               {loadingUsername?.toLowerCase() === entry.username.toLowerCase() && <RotateCw className="spin" size={16} />}
             </button>
           ))}

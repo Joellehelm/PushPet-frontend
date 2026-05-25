@@ -1,6 +1,6 @@
 import { FormEvent, useState } from "react";
 import { Cat, Image, Paintbrush, Palette, Shirt } from "lucide-react";
-import { LANGUAGE_TO_ACCESSORY, accessoryFromUnlock } from "../assets/pets/petManifest";
+import { LANGUAGE_TO_ACCESSORY, accessoryFromUnlock, petSpeciesLabel } from "../assets/pets/petManifest";
 import { normalizePetBackground, petBackgroundOptions } from "./PetBackgroundControls";
 import type { CommunityCustomizationInput, CommunityPet } from "../types/pushpet";
 import type { PetColor, PetSpecies } from "./pets/petTypes";
@@ -38,6 +38,9 @@ export function CaretakerControls({
     .filter((unlock, index, allUnlocks) => unlock.accessory !== "none" && allUnlocks.findIndex((item) => item.accessory === unlock.accessory) === index);
   const hasCaretakerCrown = wearableOutfits.some((unlock) => unlock.accessory === "caretaker_crown");
   const currentBackground = petBackgroundOptions.find((option) => option.value === normalizePetBackground(communityPet.environment))?.label ?? "Garden";
+  const currentSpecies = petSpeciesLabel(communityPet.species);
+  const currentColor = colorOptions.find((option) => option.value === communityPet.color)?.label ?? "Purple";
+  const currentOutfit = wearableOutfits.find((unlock) => unlock.accessory === communityPet.outfit)?.label ?? (communityPet.outfit === "none" ? "No outfit" : "Caretaker Crown");
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -92,7 +95,7 @@ export function CaretakerControls({
             Type
           </label>
           <select id="community-pet-species" value={species} onChange={(event) => setSpecies(event.target.value)}>
-            <option value="">{communityPet.species ?? "goat_dragon"}</option>
+            <option value="">{currentSpecies}</option>
             {speciesOptions.map((option) => (
               <option value={option.value} key={option.value}>
                 {option.label}
@@ -106,7 +109,7 @@ export function CaretakerControls({
             Color
           </label>
           <select id="community-pet-color" value={color} onChange={(event) => setColor(event.target.value)}>
-            <option value="">{communityPet.color ?? "purple"}</option>
+            <option value="">{currentColor}</option>
             {colorOptions.map((option) => (
               <option value={option.value} key={option.value}>
                 {option.label}
@@ -120,7 +123,7 @@ export function CaretakerControls({
             Outfit
           </label>
           <select id="community-pet-outfit" value={outfit} onChange={(event) => setOutfit(event.target.value)}>
-            <option value="">{communityPet.outfit}</option>
+            <option value="">{currentOutfit}</option>
             <option value="none">Remove accessory</option>
             {wearableOutfits.map((unlock) => (
               <option value={unlock.accessory} key={unlock.accessory}>

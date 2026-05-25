@@ -112,6 +112,10 @@ export type CommunityPetResponse = {
   community_pet: CommunityPet;
 };
 
+export type LeaderboardResponse = {
+  leaderboard: LeaderboardEntry[];
+};
+
 export type CommunityCustomizationInput = {
   caretaker_username: string;
   title?: string;

@@ -28,6 +28,7 @@ import { PetBackgroundControls, normalizePetBackground } from "./components/PetB
 import { PetDesignControls, type PetDesign } from "./components/PetDesignControls";
 import { PetStageDisplay } from "./components/PetStageDisplay";
 import { DemoWalkthrough } from "./components/DemoWalkthrough";
+import { LandingPage } from "./components/LandingPage";
 import { hatchPet, updatePetBackground, updatePetCustomization, updatePetEquipment } from "./api/pushpetApi";
 import { useCommunityPet } from "./hooks/useCommunityPet";
 import { useIndividualPushpets } from "./hooks/useIndividualPushpets";
@@ -92,21 +93,32 @@ function App() {
     setPath(nextPath);
   }
 
-  if (path === "/demo" || path === "/how-it-works") {
-    return <DemoWalkthrough onBack={() => navigate("/")} />;
+  if (path === "/" || path === "") {
+    return <LandingPage onEnterApp={() => navigate("/app")} onOpenDemo={() => navigate("/demo")} />;
   }
 
-  return <PushpetApp onOpenDemo={() => navigate("/demo")} />;
+  if (path === "/demo" || path === "/how-it-works") {
+    return (
+      <DemoWalkthrough
+        onOpenCommunity={() => navigate("/app")}
+        onOpenIndividual={() => navigate("/app/individual")}
+      />
+    );
+  }
+
+  return <PushpetApp initialView={path === "/app/individual" ? "individual" : "community"} onOpenDemo={() => navigate("/demo")} />;
 }
 
-function PushpetApp({ onOpenDemo }: { onOpenDemo: () => void }) {
+function PushpetApp({ initialView = "community", onOpenDemo }: { initialView?: ActiveView; onOpenDemo: () => void }) {
   const [username, setUsername] = useState("");
-  const [activeView, setActiveView] = useState<ActiveView>("community");
+  const [activeView, setActiveView] = useState<ActiveView>(initialView);
   const [loadingUsername, setLoadingUsername] = useState<string | null>(null);
   const [hatchDesign, setHatchDesign] = useState<PetDesign>({ species: "goat_dragon", color: "blue", background: "petplace1" });
   const [activePetDesign, setActivePetDesign] = useState<PetDesign | null>(null);
   const [activePetName, setActivePetName] = useState("");
   const [equippedAccessories, setEquippedAccessories] = useState<EquippedAccessories>({});
+  const [individualSaveError, setIndividualSaveError] = useState<string | null>(null);
+  const [individualSaving, setIndividualSaving] = useState(false);
   const [communityDesign, setCommunityDesign] = useState<CommunityDesign>(() => readCommunityDesign());
   const { status, pet, error, lookup, isDormant, isDegraded } = usePet();
   const community = useCommunityPet();
@@ -143,6 +155,7 @@ function PushpetApp({ onOpenDemo }: { onOpenDemo: () => void }) {
     setLoadingUsername(null);
 
     if (response) {
+      setIndividualSaveError(null);
       community.applyCommunityPet(response.community_pet);
       sessionLeaderboard.applyServerLeaderboard(response.leaderboard);
       const existingPushpet = response.pushpet ? individualPushpets.upsert(response.pushpet) : individualPushpets.findRecord(response.pet.username);
@@ -169,14 +182,23 @@ function PushpetApp({ onOpenDemo }: { onOpenDemo: () => void }) {
 
   async function handleHatchIndividualPet() {
     if (!pet) return;
-    const response = await hatchPet(pet.username, hatchDesign);
-    community.applyCommunityPet(response.community_pet);
-    sessionLeaderboard.applyServerLeaderboard(response.leaderboard);
-    const record = individualPushpets.upsert(response.pushpet!);
-    const design = { species: record.species, color: record.color, background: record.background };
-    setActivePetDesign(design);
-    setActivePetName(record.display_name ?? "");
-    setEquippedAccessories(record.equipped);
+    setIndividualSaving(true);
+    setIndividualSaveError(null);
+
+    try {
+      const response = await hatchPet(pet.username, hatchDesign);
+      community.applyCommunityPet(response.community_pet);
+      sessionLeaderboard.applyServerLeaderboard(response.leaderboard);
+      const record = individualPushpets.upsert(response.pushpet!);
+      const design = { species: record.species, color: record.color, background: record.background };
+      setActivePetDesign(design);
+      setActivePetName(record.display_name ?? "");
+      setEquippedAccessories(record.equipped);
+    } catch (caught) {
+      setIndividualSaveError(caught instanceof Error ? caught.message : "PushPet could not save that hatch.");
+    } finally {
+      setIndividualSaving(false);
+    }
   }
 
   async function handleToggleAccessory(slot: PetAccessorySlot, accessory: PetAccessory | "none") {
@@ -192,12 +214,13 @@ function PushpetApp({ onOpenDemo }: { onOpenDemo: () => void }) {
 
     individualPushpets.updateAccessorySlot(pet.username, slot, accessory);
     try {
+      setIndividualSaveError(null);
       const response = await updatePetEquipment(pet.username, { slot, accessory });
       const record = individualPushpets.upsert(response.pushpet);
       setEquippedAccessories(record.equipped);
       sessionLeaderboard.applyServerLeaderboard(response.leaderboard);
-    } catch {
-      // Keep the optimistic equipment change when the API is temporarily unreachable.
+    } catch (caught) {
+      setIndividualSaveError(caught instanceof Error ? caught.message : "PushPet could not save that accessory change.");
     }
   }
 
@@ -208,12 +231,13 @@ function PushpetApp({ onOpenDemo }: { onOpenDemo: () => void }) {
     individualPushpets.updateBackground(pet.username, background);
 
     try {
+      setIndividualSaveError(null);
       const response = await updatePetBackground(pet.username, { background });
       const record = individualPushpets.upsert(response.pushpet);
       setActivePetDesign({ species: record.species, color: record.color, background: record.background });
       sessionLeaderboard.applyServerLeaderboard(response.leaderboard);
-    } catch {
-      // Keep the optimistic background change when the API is temporarily unreachable.
+    } catch (caught) {
+      setIndividualSaveError(caught instanceof Error ? caught.message : "PushPet could not save that place change.");
     }
   }
 
@@ -221,14 +245,8 @@ function PushpetApp({ onOpenDemo }: { onOpenDemo: () => void }) {
     if (!pet) return;
 
     const displayName = input.displayName.trim().slice(0, 28);
-    setActivePetName(displayName);
-    setActivePetDesign(input.design);
-    individualPushpets.updateCustomization(pet.username, {
-      display_name: displayName || null,
-      species: input.design.species,
-      color: input.design.color,
-      background: input.design.background
-    });
+    setIndividualSaving(true);
+    setIndividualSaveError(null);
 
     try {
       const response = await updatePetCustomization(pet.username, {
@@ -241,8 +259,10 @@ function PushpetApp({ onOpenDemo }: { onOpenDemo: () => void }) {
       setActivePetName(record.display_name ?? "");
       setActivePetDesign({ species: record.species, color: record.color, background: record.background });
       sessionLeaderboard.applyServerLeaderboard(response.leaderboard);
-    } catch {
-      // Keep the optimistic customization while the API catches up.
+    } catch (caught) {
+      setIndividualSaveError(caught instanceof Error ? caught.message : "PushPet could not save that customization.");
+    } finally {
+      setIndividualSaving(false);
     }
   }
 
@@ -326,6 +346,8 @@ function PushpetApp({ onOpenDemo }: { onOpenDemo: () => void }) {
             onToggleAccessory={handleToggleAccessory}
             onBackgroundChange={handleIndividualBackgroundChange}
             onCustomize={handleIndividualCustomizationChange}
+            saveError={individualSaveError}
+            isSaving={individualSaving}
           />
         )}
 
@@ -406,6 +428,8 @@ type IndividualWorkspaceProps = {
   onToggleAccessory: (slot: PetAccessorySlot, accessory: PetAccessory | "none") => void;
   onBackgroundChange: (background: PetBackground) => void;
   onCustomize: (input: { displayName: string; design: PetDesign }) => void | Promise<void>;
+  saveError: string | null;
+  isSaving: boolean;
 };
 
 function IndividualWorkspace({
@@ -426,9 +450,12 @@ function IndividualWorkspace({
   onHatch,
   onToggleAccessory,
   onBackgroundChange,
-  onCustomize
+  onCustomize,
+  saveError,
+  isSaving
 }: IndividualWorkspaceProps) {
   const [expandedPanel, setExpandedPanel] = useState<"place" | "accessories" | "feed" | null>(null);
+  const [openCustomizerMenu, setOpenCustomizerMenu] = useState<"species" | "color" | null>(null);
   const [draftName, setDraftName] = useState(displayName);
   const [draftDesign, setDraftDesign] = useState(design);
   const lookupDisabled = status === "loading" || !username.trim();
@@ -661,8 +688,8 @@ function IndividualWorkspace({
               saveCustomization();
             }}
           >
-            <label>
-              Name
+            <label className="customizer-field customizer-field-name">
+              <span className="customizer-label">Name</span>
               <input
                 value={draftName}
                 onChange={(event) => setDraftName(event.target.value)}
@@ -671,34 +698,33 @@ function IndividualWorkspace({
                 placeholder={`${pet.username}'s Pushpet`}
               />
             </label>
-            <label>
-              Type
-              <select
-                value={draftDesign.species}
-                onChange={(event) => updateDraftDesign({ ...draftDesign, species: event.target.value as PetSpecies })}
-              >
-                {speciesOptions.map((option) => (
-                  <option value={option.value} key={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label>
-              Color
-              <select
-                value={draftDesign.color}
-                onChange={(event) => updateDraftDesign({ ...draftDesign, color: event.target.value as PetColor })}
-              >
-                {colorOptions.map((option) => (
-                  <option value={option.value} key={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <button type="submit">Save</button>
+            <CustomizerDropdown<PetSpecies>
+              id="individual-pet-type"
+              label="Type"
+              value={draftDesign.species}
+              options={speciesOptions}
+              isOpen={openCustomizerMenu === "species"}
+              onToggle={() => setOpenCustomizerMenu((current) => (current === "species" ? null : "species"))}
+              onChange={(species) => {
+                updateDraftDesign({ ...draftDesign, species });
+                setOpenCustomizerMenu(null);
+              }}
+            />
+            <CustomizerDropdown<PetColor>
+              id="individual-pet-color"
+              label="Color"
+              value={draftDesign.color}
+              options={colorOptions}
+              isOpen={openCustomizerMenu === "color"}
+              onToggle={() => setOpenCustomizerMenu((current) => (current === "color" ? null : "color"))}
+              onChange={(color) => {
+                updateDraftDesign({ ...draftDesign, color });
+                setOpenCustomizerMenu(null);
+              }}
+            />
+            <button type="submit" disabled={isSaving}>{isSaving ? "Saving" : "Save"}</button>
           </form>
+          {saveError && <p className="form-error individual-save-error">{saveError}</p>}
         </section>
         <div className={`individual-panel-stack ${expandedPanel ? "has-expanded" : ""}`}>
           <CollapsiblePanel
@@ -783,6 +809,57 @@ type CollapsiblePanelProps = {
   onToggle: (panel: "place" | "accessories" | "feed" | null) => void;
   children: ReactNode;
 };
+
+type CustomizerDropdownProps<T extends string> = {
+  id: string;
+  label: string;
+  value: T;
+  options: Array<{ value: T; label: string }>;
+  isOpen: boolean;
+  onToggle: () => void;
+  onChange: (value: T) => void;
+};
+
+function CustomizerDropdown<T extends string>({ id, label, value, options, isOpen, onToggle, onChange }: CustomizerDropdownProps<T>) {
+  const selected = options.find((option) => option.value === value) ?? options[0];
+
+  return (
+    <div className={`customizer-field customizer-dropdown-field ${isOpen ? "is-open" : ""}`}>
+      <span id={`${id}-label`} className="customizer-label">
+        {label}
+      </span>
+      <button
+        className="customizer-select-trigger"
+        type="button"
+        aria-haspopup="listbox"
+        aria-expanded={isOpen}
+        aria-labelledby={`${id}-label ${id}-value`}
+        onClick={onToggle}
+      >
+        <span className={`customizer-swatch customizer-swatch-${value}`} aria-hidden="true" />
+        <span id={`${id}-value`}>{selected.label}</span>
+        <span className="customizer-caret" aria-hidden="true" />
+      </button>
+      {isOpen && (
+        <div className="customizer-option-menu" role="listbox" aria-labelledby={`${id}-label`}>
+          {options.map((option) => (
+            <button
+              className={option.value === value ? "is-selected" : ""}
+              key={option.value}
+              type="button"
+              role="option"
+              aria-selected={option.value === value}
+              onClick={() => onChange(option.value)}
+            >
+              <span className={`customizer-swatch customizer-swatch-${option.value}`} aria-hidden="true" />
+              <span>{option.label}</span>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 function CollapsiblePanel({ id, title, expandedPanel, onToggle, children }: CollapsiblePanelProps) {
   const isExpanded = expandedPanel === id;

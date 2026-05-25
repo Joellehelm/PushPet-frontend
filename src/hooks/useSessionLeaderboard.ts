@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
-import { accessoryFromUnlock, colorFromSeed, normalizeMood, speciesFromSeed, stageFromEvolution } from "../assets/pets/petManifest";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { fetchLeaderboard } from "../api/pushpetApi";
+import { accessoryFromUnlock, colorFromSeed, normalizeColor, normalizeMood, normalizeSpecies, speciesFromSeed, stageFromEvolution } from "../assets/pets/petManifest";
 import { normalizePetBackground } from "../components/PetBackgroundControls";
 import type { EquippedAccessories, PetAccessory, PetBackground, PetColor, PetMood, PetSpecies, PetStage } from "../components/pets/petTypes";
 import type { IndividualPet, LeaderboardEntry } from "../types/pushpet";
@@ -39,7 +40,7 @@ export function useSessionLeaderboard() {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(entries.slice(0, MAX_RECENT_UNIQUE)));
   }, [entries]);
 
-  function applyServerLeaderboard(serverEntries: LeaderboardEntry[] = []) {
+  const applyServerLeaderboard = useCallback((serverEntries: LeaderboardEntry[] = []) => {
     setEntries(
       serverEntries.map((entry) => ({
         username: entry.username,
@@ -48,16 +49,24 @@ export function useSessionLeaderboard() {
         mood: entry.mood ?? "curious",
         dormancy_state: entry.dormancy_state ?? "thriving",
         looked_up_at: entry.last_seen_at ?? new Date().toISOString(),
-        species: (entry.species as PetSpecies) ?? speciesFromSeed(entry.username),
+        species: entry.species ? normalizeSpecies(entry.species) : speciesFromSeed(entry.username),
         stage: stageFromEvolution("hatchling", entry.score),
-        color: (entry.color as PetColor) ?? colorFromSeed(entry.username, entry.score),
+        color: entry.color ? normalizeColor(entry.color) : colorFromSeed(entry.username, entry.score),
         accessory: (entry.accessory as PetAccessory) ?? "none",
         equipped: entry.equipped as EquippedAccessories,
         background: normalizePetBackground(entry.background),
         renderer_mood: normalizeMood(entry.mood ?? "curious", entry.dormancy_state ?? "thriving")
       }))
     );
-  }
+  }, []);
+
+  useEffect(() => {
+    fetchLeaderboard()
+      .then((response) => applyServerLeaderboard(response.leaderboard))
+      .catch(() => {
+        // Keep the locally cached board when the API is unavailable.
+      });
+  }, [applyServerLeaderboard]);
 
   function recordPet(pet: IndividualPet, design?: { species: PetSpecies; color: PetColor; background?: PetBackground }, accessory?: PetAccessory, equipped?: EquippedAccessories) {
     setEntries((current) => {
