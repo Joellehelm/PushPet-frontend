@@ -6,17 +6,33 @@ import type {
   PushpetEquipmentResponse
 } from "../types/pushpet";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:3004";
+const FALLBACK_PRODUCTION_API_URL = "https://pushpet-backend.onrender.com";
+
+function defaultApiBaseUrl() {
+  if (typeof window !== "undefined" && ["localhost", "127.0.0.1"].includes(window.location.hostname)) {
+    return "http://localhost:3004";
+  }
+
+  return FALLBACK_PRODUCTION_API_URL;
+}
+
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || defaultApiBaseUrl()).replace(/\/$/, "");
 
 async function requestJson<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    ...init,
-    headers: {
-      Accept: "application/json",
-      "Content-Type": "application/json",
-      ...init?.headers
-    }
-  });
+  let response: Response;
+
+  try {
+    response = await fetch(`${API_BASE_URL}${path}`, {
+      ...init,
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        ...init?.headers
+      }
+    });
+  } catch {
+    throw new Error("PushPet backend is waking up. Try again in a moment.");
+  }
 
   const body = (await response.json().catch(() => ({}))) as Partial<ApiError>;
 

@@ -6,7 +6,7 @@ export type CommunityStatus = "loading" | "ready" | "error" | "saving";
 
 export function useCommunityPet() {
   const [status, setStatus] = useState<CommunityStatus>("loading");
-  const [communityPet, setCommunityPet] = useState<CommunityPet | null>(null);
+  const [communityPet, setCommunityPet] = useState<CommunityPet | null>(defaultCommunityPet());
   const [error, setError] = useState<string | null>(null);
 
   const refresh = useCallback(async () => {
@@ -17,7 +17,8 @@ export function useCommunityPet() {
       setCommunityPet(response.community_pet);
       setStatus("ready");
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "Community Pushpet is napping.");
+      setCommunityPet((current) => current ?? defaultCommunityPet());
+      setError(caught instanceof Error ? caught.message : "PushPet backend is waking up.");
       setStatus("error");
     }
   }, []);
@@ -53,5 +54,30 @@ export function useCommunityPet() {
     refresh,
     applyCommunityPet,
     customize
+  };
+}
+
+function defaultCommunityPet(): CommunityPet {
+  return {
+    featured_name: "Pushpet Prime",
+    display_title: "Community Pushpet",
+    outfit: "none",
+    community_score: 0,
+    level: 1,
+    evolution_stage: "egg",
+    hunger: 45,
+    happiness: 55,
+    mood: "idle",
+    dominant_language: null,
+    top_caretaker: null,
+    contributors_count: 0,
+    total_recent_pushes: 0,
+    total_recent_prs: 0,
+    active_users_count: 0,
+    leaderboard: [],
+    unlocked_outfits: [{ id: "caretaker_crown", label: "Caretaker Crown", source_language: "Top Caretaker" }],
+    history: [{ type: "community_hatch", label: "Community Pushpet is ready to hatch" }],
+    feed_log: [{ type: "community_hatch", label: "Community Pushpet is ready to hatch" }],
+    updated_at: new Date().toISOString()
   };
 }

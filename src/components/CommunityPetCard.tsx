@@ -39,6 +39,7 @@ export function CommunityPetCard({
   const displayMood = design.hatched ? communityPet?.mood ?? "idle" : "idle";
   const displayStage = design.hatched ? communityPet?.evolution_stage ?? "egg" : "egg";
   const displayOutfit = design.hatched ? communityPet?.outfit : null;
+  const backendOffline = status === "error";
   const viewCommunityPet = communityPet
     ? {
         ...communityPet,
@@ -80,6 +81,12 @@ export function CommunityPetCard({
         <p className="quiet-copy">Warming up the community habitat...</p>
       ) : viewCommunityPet ? (
         <>
+          {backendOffline && (
+            <div className="offline-ribbon" role="status">
+              Backend is waking up. You can still preview the habitat.
+            </div>
+          )}
+
           <PetStageDisplay
             score={displayScore}
             mood={displayMood}
