@@ -17,21 +17,31 @@ function defaultApiBaseUrl() {
 }
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || defaultApiBaseUrl()).replace(/\/$/, "");
+const REQUEST_TIMEOUT_MS = 14_000;
 
 async function requestJson<T>(path: string, init?: RequestInit): Promise<T> {
   let response: Response;
+  const controller = new AbortController();
+  const timeoutId = window.setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
 
   try {
     response = await fetch(`${API_BASE_URL}${path}`, {
       ...init,
+      signal: controller.signal,
       headers: {
         Accept: "application/json",
         "Content-Type": "application/json",
         ...init?.headers
       }
     });
-  } catch {
-    throw new Error("PushPet backend is waking up. Try again in a moment.");
+  } catch (caught) {
+    if (caught instanceof DOMException && caught.name === "AbortError") {
+      throw new Error("Lookup timed out. The PushPet backend may still be waking up. Please try again.");
+    }
+
+    throw new Error("PushPet backend is waking up. Please try again.");
+  } finally {
+    window.clearTimeout(timeoutId);
   }
 
   const body = (await response.json().catch(() => ({}))) as Partial<ApiError>;
