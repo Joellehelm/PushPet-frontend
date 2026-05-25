@@ -181,7 +181,7 @@ function PushpetApp({ initialView = "community", onOpenDemo }: { initialView?: A
   }
 
   async function handleHatchIndividualPet() {
-    if (!pet) return;
+    if (!pet || individualSaving) return;
     setIndividualSaving(true);
     setIndividualSaveError(null);
 
@@ -189,7 +189,11 @@ function PushpetApp({ initialView = "community", onOpenDemo }: { initialView?: A
       const response = await hatchPet(pet.username, hatchDesign);
       community.applyCommunityPet(response.community_pet);
       sessionLeaderboard.applyServerLeaderboard(response.leaderboard);
-      const record = individualPushpets.upsert(response.pushpet!);
+      if (!response.pushpet) {
+        throw new Error("PushPet did not return a saved pet record. Try choosing the pet again.");
+      }
+
+      const record = individualPushpets.upsert(response.pushpet);
       const design = { species: record.species, color: record.color, background: record.background };
       setActivePetDesign(design);
       setActivePetName(record.display_name ?? "");
@@ -627,8 +631,16 @@ function IndividualWorkspace({
             colorOptions={colorOptions}
             onChange={onHatchDesignChange}
           />
-          <button className="hatch-community-button" type="button" onClick={onHatch}>
-            Hatch @{pet.username}
+          <p className="quiet-copy hatch-helper-copy">Low public activity may keep this pet in egg form until more GitHub signals appear.</p>
+          <button className="hatch-community-button" type="button" onClick={onHatch} disabled={isSaving}>
+            {isSaving ? (
+              <>
+                <Loader2 className="spin" size={18} />
+                Choosing pet...
+              </>
+            ) : (
+              "Choose pet"
+            )}
           </button>
         </section>
         <section className="toy-panel individual-card">

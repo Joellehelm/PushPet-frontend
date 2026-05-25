@@ -3603,6 +3603,24 @@ body.pushpet-how-it-works-page {
   display: none !important;
 }
 
+.individual-hatch-box .hatch-helper-copy {
+  margin: 10px 0 0 !important;
+  font-size: 0.88rem !important;
+  font-weight: 900 !important;
+  line-height: 1.25 !important;
+}
+
+.hatch-community-button:disabled {
+  cursor: wait !important;
+  opacity: 0.82 !important;
+  transform: none !important;
+  filter: saturate(0.78) !important;
+}
+
+.hatch-community-button:disabled:active {
+  transform: none !important;
+}
+
 /* Keep app panels reachable in narrow or short webviews. */
 @media (max-width: 1180px), (max-height: 1020px) {
   body:not(.pushpet-landing-page):not(.pushpet-how-it-works-page),
