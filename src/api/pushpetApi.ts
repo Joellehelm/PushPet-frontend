@@ -6,14 +6,12 @@ import type {
   PushpetEquipmentResponse
 } from "../types/pushpet";
 
-const FALLBACK_PRODUCTION_API_URL = "https://pushpet-backend.onrender.com";
-
 function defaultApiBaseUrl() {
   if (typeof window !== "undefined" && ["localhost", "127.0.0.1"].includes(window.location.hostname)) {
     return "http://localhost:3004";
   }
 
-  return FALLBACK_PRODUCTION_API_URL;
+  return "";
 }
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || defaultApiBaseUrl()).replace(/\/$/, "");
@@ -22,6 +20,10 @@ const REQUEST_TIMEOUT_MS = 14_000;
 class BackendUnavailableError extends Error {}
 
 async function requestJson<T>(path: string, init?: RequestInit): Promise<T> {
+  if (!API_BASE_URL) {
+    throw new BackendUnavailableError("PushPet backend is not connected yet.");
+  }
+
   let response: Response;
   const controller = new AbortController();
   const timeoutId = window.setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
