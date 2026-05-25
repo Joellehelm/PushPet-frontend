@@ -1,0 +1,106 @@
+:root {
+  color: #171123;
+  background: #171123;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  --ink: #171123;
+  --paper: #fffdf5;
+  --paper-soft: #fff0c9;
+  --muted: #5b4f69;
+  --pink: #ff4fb0;
+  --hot-pink: #ff2d8d;
+  --blue: #22b8ff;
+  --cyan: #00e6f2;
+  --lime: #9cff3d;
+  --yellow: #ffe23f;
+  --orange: #ff8a24;
+  --purple: #7c4dff;
+  --mint: #54f0b4;
+  --danger: #d92e4b;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-width: 320px;
+  min-height: 100%;
+  background: #171123;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow: hidden;
+  color: var(--ink);
+  background: #211836 url("/assets/brand/pushpet-bg.png") center / cover fixed no-repeat;
+}
+
+body::before,
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+
+body::before {
+  background:
+    radial-gradient(circle at 18% 16%, rgba(255, 255, 255, 0.18) 0 1px, transparent 2px),
+    radial-gradient(circle at 80% 74%, rgba(255, 255, 255, 0.13) 0 1px, transparent 2px);
+  background-size: 16px 16px, 22px 22px;
+  opacity: 0.7;
+}
+
+body::after {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent 34%),
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.035) 0 1px, transparent 1px 4px);
+  opacity: 0.82;
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+}
+
+a {
+  color: inherit;
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+a:focus-visible {
+  outline: 4px solid #00e6f2;
+  outline-offset: 3px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
