@@ -1,13 +1,16 @@
 import { Sparkles } from "lucide-react";
+import type { CSSProperties } from "react";
 import {
   accessoryFromUnlock,
   colorFromSeed,
   normalizeMood,
+  petSpeciesLabel,
   speciesFromSeed,
   stageFromEvolution
 } from "../assets/pets/petManifest";
+import { normalizePetBackground } from "./PetBackgroundControls";
 import { PetRenderer } from "./pets/PetRenderer";
-import type { PetAccessory, PetColor, PetSpecies } from "./pets/petTypes";
+import type { PetAccessory, PetBackground, PetColor, PetEnvironment, PetSpecies } from "./pets/petTypes";
 
 type PetStageDisplayProps = {
   score: number;
@@ -22,6 +25,9 @@ type PetStageDisplayProps = {
   accessories?: PetAccessory[];
   compact?: boolean;
   size?: number;
+  environment?: PetEnvironment | string | null;
+  background?: PetBackground | string | null;
+  showPet?: boolean;
 };
 
 const stageMap: Record<string, string> = {
@@ -57,7 +63,10 @@ export function PetStageDisplay({
   accessory,
   accessories,
   compact = false,
-  size
+  size,
+  environment = "petplace1",
+  background,
+  showPet = true
 }: PetStageDisplayProps) {
   const petStage = stageFromEvolution(evolutionStage, score);
   const visualStage = visualStageLabel(evolutionStage, score);
@@ -66,32 +75,41 @@ export function PetStageDisplay({
   const petColor = color ?? colorFromSeed(seed, score);
   const petAccessory = accessory ?? accessoryFromUnlock(outfit);
   const renderSize = size ?? (compact ? 164 : 214);
+  const normalizedBackground = normalizePetBackground(background ?? environment);
+  const backgroundImage = `url("/${normalizedBackground}.png")`;
 
   return (
-    <div className={`pet-stage-display stage-${petStage} dormancy-${dormancyState} mood-${petMood} ${compact ? "compact" : ""}`}>
+    <div
+      className={`pet-stage-display stage-${petStage} dormancy-${dormancyState} mood-${petMood} pet-place-${normalizedBackground} has-place-background ${compact ? "compact" : ""}`}
+      style={{ "--pet-place-image": backgroundImage } as CSSProperties}
+    >
       <div className="toy-sky">
         <span className="pixel-star one" />
         <span className="pixel-star two" />
         <span className="pixel-star three" />
       </div>
-      <div className="pet-stage-rig" style={{ width: renderSize, height: renderSize }}>
-        <div className="pet-shadow" />
-        <PetRenderer
-          species={petSpecies}
-          stage={petStage}
-          mood={petMood}
-        color={petColor}
-        accessory={petAccessory}
-        accessories={accessories}
-        size={renderSize}
-          aria-label={`${visualStage} ${petSpecies.replace("_", " ")} Pushpet, ${petMood} mood`}
-        />
-      </div>
-      <div className="stage-sticker">
-        <Sparkles size={14} />
-        <span>{visualStage}</span>
-      </div>
-      <span className="pet-score-bubble">{score}</span>
+      {showPet && (
+        <>
+          <div className="pet-stage-rig" style={{ width: renderSize, height: renderSize }}>
+            <div className="pet-shadow" />
+            <PetRenderer
+              species={petSpecies}
+              stage={petStage}
+              mood={petMood}
+              color={petColor}
+              accessory={petAccessory}
+              accessories={accessories}
+              size={renderSize}
+              aria-label={`${visualStage} ${petSpeciesLabel(petSpecies)} Pushpet, ${petMood} mood`}
+            />
+          </div>
+          <div className="stage-sticker">
+            <Sparkles size={14} />
+            <span>{visualStage}</span>
+          </div>
+          <span className="pet-score-bubble">{score}</span>
+        </>
+      )}
     </div>
   );
 }

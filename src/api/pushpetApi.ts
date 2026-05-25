@@ -17,11 +17,12 @@ function defaultApiBaseUrl() {
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || defaultApiBaseUrl()).replace(/\/$/, "");
 const REQUEST_TIMEOUT_MS = 14_000;
 
+class ApiConfigurationError extends Error {}
 class BackendUnavailableError extends Error {}
 
 async function requestJson<T>(path: string, init?: RequestInit): Promise<T> {
   if (!API_BASE_URL) {
-    throw new BackendUnavailableError("PushPet backend is not connected yet.");
+    throw new ApiConfigurationError("PushPet API URL is not configured. Set VITE_API_BASE_URL to the Rails backend URL.");
   }
 
   let response: Response;
@@ -40,10 +41,10 @@ async function requestJson<T>(path: string, init?: RequestInit): Promise<T> {
     });
   } catch (caught) {
     if (caught instanceof DOMException && caught.name === "AbortError") {
-      throw new BackendUnavailableError("Lookup timed out. The PushPet backend may still be waking up.");
+      throw new BackendUnavailableError("Lookup timed out while waiting for the PushPet backend.");
     }
 
-    throw new BackendUnavailableError("PushPet backend is waking up.");
+    throw new BackendUnavailableError("PushPet backend is unreachable.");
   } finally {
     window.clearTimeout(timeoutId);
   }
@@ -51,7 +52,8 @@ async function requestJson<T>(path: string, init?: RequestInit): Promise<T> {
   const body = (await response.json().catch(() => ({}))) as Partial<ApiError>;
 
   if (!response.ok) {
-    throw new Error(body.error ?? "PushPet had trouble reaching GitHub. Please try again.");
+    const detail = typeof body.exception === "string" ? body.exception.replace(/^#<|>$/g, "") : null;
+    throw new Error(detail ?? body.error ?? `PushPet API returned HTTP ${response.status}.`);
   }
 
   return body as T;
@@ -65,7 +67,7 @@ export function fetchPet(username: string) {
   });
 }
 
-export function hatchPet(username: string, input: { species: string; color: string }) {
+export function hatchPet(username: string, input: { species: string; color: string; background: string }) {
   const cleanUsername = username.trim();
   return requestJson<PetLookupResponse>(`/api/v1/pets/${encodeURIComponent(cleanUsername)}/hatch`, {
     method: "POST",
@@ -74,10 +76,12 @@ export function hatchPet(username: string, input: { species: string; color: stri
     if (caught instanceof BackendUnavailableError) {
       return buildOfflinePetResponse(cleanUsername, {
         username: cleanUsername,
+        display_name: null,
         species: input.species,
         color: input.color,
         accessory: "none",
         equipped: {},
+        background: input.background,
         hatched_at: new Date().toISOString()
       });
     }
@@ -88,6 +92,22 @@ export function hatchPet(username: string, input: { species: string; color: stri
 export function updatePetEquipment(username: string, input: { slot: string; accessory: string }) {
   const cleanUsername = username.trim();
   return requestJson<PushpetEquipmentResponse>(`/api/v1/pets/${encodeURIComponent(cleanUsername)}/equipment`, {
+    method: "PATCH",
+    body: JSON.stringify(input)
+  });
+}
+
+export function updatePetBackground(username: string, input: { background: string }) {
+  const cleanUsername = username.trim();
+  return requestJson<PushpetEquipmentResponse>(`/api/v1/pets/${encodeURIComponent(cleanUsername)}/background`, {
+    method: "PATCH",
+    body: JSON.stringify(input)
+  });
+}
+
+export function updatePetCustomization(username: string, input: { display_name?: string; species?: string; color?: string; background?: string }) {
+  const cleanUsername = username.trim();
+  return requestJson<PushpetEquipmentResponse>(`/api/v1/pets/${encodeURIComponent(cleanUsername)}/customization`, {
     method: "PATCH",
     body: JSON.stringify(input)
   });
@@ -110,7 +130,7 @@ function buildOfflinePetResponse(username: string, pushpet = null as PetLookupRe
   const feed = [
     {
       type: "offline",
-      label: "Backend is waking up; showing a demo-safe Pushpet shell",
+      label: "Backend is unreachable; showing a demo-safe Pushpet shell",
       timestamp: now
     }
   ];
@@ -138,7 +158,7 @@ function buildOfflinePetResponse(username: string, pushpet = null as PetLookupRe
       recent_commit_messages: [],
       history: feed,
       feed_log: feed,
-      summary_text: `${cleanUsername}'s Pushpet shell is ready while the backend wakes up. Public GitHub scoring will appear once the API responds.`,
+      summary_text: `${cleanUsername}'s Pushpet shell is ready while the backend is unreachable. Public GitHub scoring will appear once the API responds.`,
       degraded: true,
       degraded_messages: ["Backend unavailable; this is a temporary demo-safe fallback."]
     },
@@ -147,7 +167,10 @@ function buildOfflinePetResponse(username: string, pushpet = null as PetLookupRe
     community_pet: {
       featured_name: "Pushpet Prime",
       display_title: "Community Pushpet",
+      species: "goat_dragon",
+      color: "purple",
       outfit: "none",
+      environment: "petplace1",
       community_score: 0,
       level: 1,
       evolution_stage: "egg",

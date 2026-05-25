@@ -12,15 +12,7 @@ export function ActivitySummary({ pet }: ActivitySummaryProps) {
     <section className={`activity-summary ${dormant ? "dormant" : "active"}`}>
       <div className="summary-heading">
         {dormant ? <Moon size={18} /> : <Zap size={18} />}
-        <span>{dormant ? "Quiet little legend" : "Freshly charged"}</span>
-      </div>
-      <p>
-        <strong>{pet.summary_text}</strong>
-      </p>
-      <div className="summary-chips">
-        <span>{pet.recent_pushes_7d} pushes this week</span>
-        <span>{pet.recent_prs_30d} PR signals</span>
-        <span>{pet.active_repo_count_30d} active repos</span>
+        <span>{dormant ? "Quiet activity" : "GitHub activity"}</span>
       </div>
       {pet.degraded && (
         <div className="rate-note">

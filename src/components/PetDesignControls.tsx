@@ -1,8 +1,10 @@
-import type { PetColor, PetSpecies } from "./pets/petTypes";
+import { PetBackgroundControls, normalizePetBackground } from "./PetBackgroundControls";
+import type { PetBackground, PetColor, PetSpecies } from "./pets/petTypes";
 
 export type PetDesign = {
   species: PetSpecies;
   color: PetColor;
+  background: PetBackground;
 };
 
 type PetDesignControlsProps = {
@@ -40,6 +42,11 @@ export function PetDesignControls({ title, design, speciesOptions, colorOptions,
           />
         ))}
       </div>
+      <PetBackgroundControls
+        title="Place"
+        value={normalizePetBackground(design.background)}
+        onChange={(background) => onChange({ ...design, background })}
+      />
     </section>
   );
 }

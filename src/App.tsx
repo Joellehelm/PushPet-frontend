@@ -1,28 +1,46 @@
-import { FormEvent, useEffect, useState } from "react";
-import { AlertTriangle, ArrowRight, BadgeInfo, Github, Loader2, RotateCw, Sparkles, ToyBrick } from "lucide-react";
+import { FormEvent, type ReactNode, useEffect, useState } from "react";
+import {
+  ArrowRight,
+  Cat,
+  CircleHelp,
+  Gamepad2,
+  Github,
+  Heart,
+  Home,
+  Loader2,
+  AlertTriangle,
+  Settings,
+  ShoppingCart,
+  Star,
+  RotateCw,
+  Sparkles,
+  Trophy,
+  ToyBrick,
+  Users
+} from "lucide-react";
 import { ActivitySummary } from "./components/ActivitySummary";
 import { CommunityPetCard } from "./components/CommunityPetCard";
 import { FeedLog } from "./components/FeedLog";
 import { LeaderboardPanel } from "./components/LeaderboardPanel";
 import { OutfitUnlocks } from "./components/OutfitUnlocks";
 import { CareMeters } from "./components/CareMeters";
+import { PetBackgroundControls, normalizePetBackground } from "./components/PetBackgroundControls";
 import { PetDesignControls, type PetDesign } from "./components/PetDesignControls";
 import { PetStageDisplay } from "./components/PetStageDisplay";
-import { PetStatsPanel } from "./components/PetStatsPanel";
 import { DemoWalkthrough } from "./components/DemoWalkthrough";
-import { hatchPet, updatePetEquipment } from "./api/pushpetApi";
+import { hatchPet, updatePetBackground, updatePetCustomization, updatePetEquipment } from "./api/pushpetApi";
 import { useCommunityPet } from "./hooks/useCommunityPet";
 import { useIndividualPushpets } from "./hooks/useIndividualPushpets";
 import { usePet } from "./hooks/usePet";
 import { useSessionLeaderboard } from "./hooks/useSessionLeaderboard";
-import { accessoriesFromEquipment } from "./assets/pets/petManifest";
-import type { EquippedAccessories, PetAccessory, PetAccessorySlot, PetColor, PetSpecies } from "./components/pets/petTypes";
+import { accessoriesFromEquipment, petSpeciesLabel } from "./assets/pets/petManifest";
+import type { EquippedAccessories, PetAccessory, PetAccessorySlot, PetBackground, PetColor, PetSpecies } from "./components/pets/petTypes";
 import type { IndividualPet } from "./types/pushpet";
 
 const speciesOptions: Array<{ value: PetSpecies; label: string }> = [
-  { value: "goat_dragon", label: "Goat-Dragon" },
-  { value: "raccoon", label: "Raccoon" },
-  { value: "star_axolotl", label: "Star Axolotl" }
+  { value: "goat_dragon", label: petSpeciesLabel("goat_dragon") },
+  { value: "raccoon", label: petSpeciesLabel("raccoon") },
+  { value: "star_axolotl", label: petSpeciesLabel("star_axolotl") }
 ];
 
 const colorOptions: Array<{ value: PetColor; label: string }> = [
@@ -38,22 +56,25 @@ type CommunityDesign = PetDesign & {
   hatched: boolean;
 };
 
-const COMMUNITY_DESIGN_KEY = "pushpet.communityDesign.v2";
+type ActiveView = "community" | "individual" | "rankings";
+
+const COMMUNITY_DESIGN_KEY = "pushpet.communityDesign.v3";
 
 function readCommunityDesign(): CommunityDesign {
   try {
     const stored = window.localStorage.getItem(COMMUNITY_DESIGN_KEY);
-    if (!stored) return { species: "star_axolotl", color: "purple", hatched: false };
+    if (!stored) return { species: "star_axolotl", color: "purple", background: "petplace1", hatched: true };
     const parsed = JSON.parse(stored) as Partial<CommunityDesign>;
     const species: PetSpecies = speciesOptions.some((option) => option.value === parsed.species) ? (parsed.species as PetSpecies) : "star_axolotl";
     const color: PetColor = colorOptions.some((option) => option.value === parsed.color) ? (parsed.color as PetColor) : "purple";
     return {
       species,
       color,
+      background: normalizePetBackground(parsed.background),
       hatched: Boolean(parsed.hatched)
     };
   } catch {
-    return { species: "star_axolotl", color: "purple", hatched: false };
+    return { species: "star_axolotl", color: "purple", background: "petplace1", hatched: true };
   }
 }
 
@@ -71,7 +92,7 @@ function App() {
     setPath(nextPath);
   }
 
-  if (path === "/demo") {
+  if (path === "/demo" || path === "/how-it-works") {
     return <DemoWalkthrough onBack={() => navigate("/")} />;
   }
 
@@ -80,10 +101,11 @@ function App() {
 
 function PushpetApp({ onOpenDemo }: { onOpenDemo: () => void }) {
   const [username, setUsername] = useState("");
-  const [activeView, setActiveView] = useState<"community" | "individual">("community");
+  const [activeView, setActiveView] = useState<ActiveView>("community");
   const [loadingUsername, setLoadingUsername] = useState<string | null>(null);
-  const [hatchDesign, setHatchDesign] = useState<PetDesign>({ species: "goat_dragon", color: "blue" });
+  const [hatchDesign, setHatchDesign] = useState<PetDesign>({ species: "goat_dragon", color: "blue", background: "petplace1" });
   const [activePetDesign, setActivePetDesign] = useState<PetDesign | null>(null);
+  const [activePetName, setActivePetName] = useState("");
   const [equippedAccessories, setEquippedAccessories] = useState<EquippedAccessories>({});
   const [communityDesign, setCommunityDesign] = useState<CommunityDesign>(() => readCommunityDesign());
   const { status, pet, error, lookup, isDormant, isDegraded } = usePet();
@@ -97,8 +119,13 @@ function PushpetApp({ onOpenDemo }: { onOpenDemo: () => void }) {
 
   const activeUsername = pet?.username ?? null;
   const localLeader = sessionLeaderboard.entries[0] ?? null;
+  const topCaretaker = community.communityPet?.top_caretaker ?? localLeader;
+  const topCaretakerUsername = topCaretaker?.username ?? null;
+  const activeUserIsTopCaretaker =
+    Boolean(activeUsername && topCaretakerUsername && topCaretakerUsername.toLowerCase() === activeUsername.toLowerCase());
+  const caretakerUsername = activeUserIsTopCaretaker ? activeUsername : topCaretakerUsername;
   const canCustomize = Boolean(
-    activeUsername && localLeader && localLeader.username.toLowerCase() === activeUsername.toLowerCase() && community.communityPet
+    community.communityPet && topCaretakerUsername && (!activeUsername || activeUserIsTopCaretaker)
   );
 
   async function runLookup(nextUsername: string) {
@@ -114,11 +141,13 @@ function PushpetApp({ onOpenDemo }: { onOpenDemo: () => void }) {
       sessionLeaderboard.applyServerLeaderboard(response.leaderboard);
       const existingPushpet = response.pushpet ? individualPushpets.upsert(response.pushpet) : individualPushpets.findRecord(response.pet.username);
       if (existingPushpet) {
-        const existingDesign = { species: existingPushpet.species, color: existingPushpet.color };
+        const existingDesign = { species: existingPushpet.species, color: existingPushpet.color, background: existingPushpet.background };
         setActivePetDesign(existingDesign);
+        setActivePetName(existingPushpet.display_name ?? "");
         setEquippedAccessories(existingPushpet.equipped);
       } else {
         setActivePetDesign(null);
+        setActivePetName("");
         setEquippedAccessories({});
       }
       setUsername("");
@@ -138,8 +167,9 @@ function PushpetApp({ onOpenDemo }: { onOpenDemo: () => void }) {
     community.applyCommunityPet(response.community_pet);
     sessionLeaderboard.applyServerLeaderboard(response.leaderboard);
     const record = individualPushpets.upsert(response.pushpet!);
-    const design = { species: record.species, color: record.color };
+    const design = { species: record.species, color: record.color, background: record.background };
     setActivePetDesign(design);
+    setActivePetName(record.display_name ?? "");
     setEquippedAccessories(record.equipped);
   }
 
@@ -161,90 +191,140 @@ function PushpetApp({ onOpenDemo }: { onOpenDemo: () => void }) {
       setEquippedAccessories(record.equipped);
       sessionLeaderboard.applyServerLeaderboard(response.leaderboard);
     } catch {
-      // Keep the optimistic equipment change when Render is waking up.
+      // Keep the optimistic equipment change when the API is temporarily unreachable.
+    }
+  }
+
+  async function handleIndividualBackgroundChange(background: PetBackground) {
+    if (!pet) return;
+
+    setActivePetDesign((current) => ({ ...(current ?? hatchDesign), background }));
+    individualPushpets.updateBackground(pet.username, background);
+
+    try {
+      const response = await updatePetBackground(pet.username, { background });
+      const record = individualPushpets.upsert(response.pushpet);
+      setActivePetDesign({ species: record.species, color: record.color, background: record.background });
+      sessionLeaderboard.applyServerLeaderboard(response.leaderboard);
+    } catch {
+      // Keep the optimistic background change when the API is temporarily unreachable.
+    }
+  }
+
+  async function handleIndividualCustomizationChange(input: { displayName: string; design: PetDesign }) {
+    if (!pet) return;
+
+    const displayName = input.displayName.trim().slice(0, 28);
+    setActivePetName(displayName);
+    setActivePetDesign(input.design);
+    individualPushpets.updateCustomization(pet.username, {
+      display_name: displayName || null,
+      species: input.design.species,
+      color: input.design.color,
+      background: input.design.background
+    });
+
+    try {
+      const response = await updatePetCustomization(pet.username, {
+        display_name: displayName,
+        species: input.design.species,
+        color: input.design.color,
+        background: input.design.background
+      });
+      const record = individualPushpets.upsert(response.pushpet);
+      setActivePetName(record.display_name ?? "");
+      setActivePetDesign({ species: record.species, color: record.color, background: record.background });
+      sessionLeaderboard.applyServerLeaderboard(response.leaderboard);
+    } catch {
+      // Keep the optimistic customization while the API catches up.
     }
   }
 
   return (
     <main className="app-shell">
+      <div className="pushpet-asset-preloads" aria-hidden="true">
+        <img src="/assets/pets/goat_dragon-base.png" alt="" />
+        <img src="/assets/pets/goat_dragon-accessories.png?v=placement-20260525" alt="" />
+        <img src="/assets/pets/raccoon-base.png" alt="" />
+        <img src="/assets/pets/raccoon-accessories.png?v=placement-20260525" alt="" />
+        <img src="/assets/pets/star_axolotl-base.png" alt="" />
+        <img src="/assets/pets/star_axolotl-accessories.png?v=placement-20260525" alt="" />
+      </div>
       <header className="top-marquee">
-        <img src="/assets/brand/pushpet-logo.png" alt="Pushpet" className="brand-logo" />
+        <button
+          className="brand-home-button"
+          type="button"
+          onClick={() => setActiveView("community")}
+          aria-label="Go to Pushpet home"
+        >
+          <span className="brand-star-tile" aria-hidden="true">
+            <Star size={42} />
+          </span>
+          <span className="brand-wordmark" aria-hidden="true">
+            <span className="brand-wordmark-push">Push</span>
+            <span className="brand-wordmark-pet">pet</span>
+          </span>
+        </button>
         <nav className="app-nav" aria-label="Pushpet views">
           <button className={activeView === "community" ? "is-active" : ""} type="button" onClick={() => setActiveView("community")}>
+            <Users size={22} />
             Community Pushpet
           </button>
           <button className={activeView === "individual" ? "is-active" : ""} type="button" onClick={() => setActiveView("individual")}>
+            <Cat size={22} />
             Individual Pushpet
           </button>
           <button className="how-it-works-link" type="button" onClick={onOpenDemo} aria-label="How it works">
-            <BadgeInfo size={18} />
+            <CircleHelp size={22} />
             How it works
           </button>
         </nav>
       </header>
 
       <div className={`locked-stage active-${activeView}`}>
-        <section className="community-stage">
-          <CommunityPetCard
-            communityPet={community.communityPet}
-            status={community.status}
-            error={community.error}
-            activeUsername={activeUsername}
-            canCustomize={canCustomize}
-            onCustomize={community.customize}
-            design={communityDesign}
-            speciesOptions={speciesOptions}
-            colorOptions={colorOptions}
-            onDesignChange={(nextDesign) => setCommunityDesign((current) => ({ ...current, ...nextDesign }))}
-            onHatch={() => setCommunityDesign((current) => ({ ...current, hatched: true }))}
-          />
-        </section>
+        {activeView === "community" && (
+          <section className="community-stage">
+            <CommunityPetCard
+              communityPet={community.communityPet}
+              status={community.status}
+              error={community.error}
+              activeUsername={caretakerUsername}
+              canCustomize={canCustomize}
+              onCustomize={community.customize}
+              design={communityDesign}
+              speciesOptions={speciesOptions}
+              colorOptions={colorOptions}
+              onDesignChange={(nextDesign) => setCommunityDesign((current) => ({ ...current, ...nextDesign }))}
+              onHatch={() => setCommunityDesign((current) => ({ ...current, hatched: true }))}
+            />
+          </section>
+        )}
 
-        <aside className="side-console">
-          {activeView === "individual" ? (
-            <>
-              <section className="toy-panel hatch-panel">
-                <div className="panel-heading">
-                  <div>
-                    <span className="eyebrow">Individual</span>
-                <h2>Get individual Pushpet</h2>
-              </div>
-              <ToyBrick size={24} />
-            </div>
-                <form className="lookup-form" onSubmit={handleLookup}>
-                  <label htmlFor="github-username">GitHub username</label>
-                  <div className="lookup-row">
-                    <Github aria-hidden="true" size={20} />
-                    <input
-                      id="github-username"
-                      value={username}
-                      onChange={(event) => setUsername(event.target.value)}
-                      placeholder="octocat"
-                      autoComplete="off"
-                      spellCheck={false}
-                    />
-                    <button type="submit" disabled={status === "loading" || !username.trim()} aria-label="Get individual Pushpet">
-                      {status === "loading" ? <Loader2 className="spin" size={20} /> : <ArrowRight size={20} />}
-                    </button>
-                  </div>
-                </form>
-              </section>
-              <IndividualResult
-                status={status}
-                pet={pet}
-                error={error}
-                isDormant={isDormant}
-                isDegraded={isDegraded}
-                design={activePetDesign ?? hatchDesign}
-                hatchDesign={hatchDesign}
-                hasHatched={Boolean(pet && individualPushpets.findRecord(pet.username))}
-                equippedAccessories={equippedAccessories}
-                onHatchDesignChange={setHatchDesign}
-                onHatch={handleHatchIndividualPet}
-                onToggleAccessory={handleToggleAccessory}
-              />
-            </>
-          ) : (
+        {activeView === "individual" && (
+          <IndividualWorkspace
+            username={username}
+            status={status}
+            pet={pet}
+            error={error}
+            isDormant={isDormant}
+            isDegraded={isDegraded}
+            design={activePetDesign ?? hatchDesign}
+            displayName={activePetName}
+            hatchDesign={hatchDesign}
+            hasHatched={Boolean(pet && individualPushpets.findRecord(pet.username))}
+            equippedAccessories={equippedAccessories}
+            onUsernameChange={setUsername}
+            onLookup={handleLookup}
+            onHatchDesignChange={setHatchDesign}
+            onHatch={handleHatchIndividualPet}
+            onToggleAccessory={handleToggleAccessory}
+            onBackgroundChange={handleIndividualBackgroundChange}
+            onCustomize={handleIndividualCustomizationChange}
+          />
+        )}
+
+        {activeView === "rankings" && (
+          <section className="rankings-page">
             <LeaderboardPanel
               entries={sessionLeaderboard.entries}
               onSelect={(entry) => {
@@ -253,38 +333,63 @@ function PushpetApp({ onOpenDemo }: { onOpenDemo: () => void }) {
               }}
               loadingUsername={loadingUsername}
             />
-          )}
-          {activeView === "individual" && (
-            <LeaderboardPanel
-              entries={sessionLeaderboard.entries}
-              onSelect={(entry) => {
-                void runLookup(entry.username);
-              }}
-              loadingUsername={loadingUsername}
-            />
-          )}
-        </aside>
+          </section>
+        )}
       </div>
+
+      <nav className="bottom-dock" aria-label="Pushpet action rail">
+        <button className={activeView === "community" ? "is-active" : ""} type="button" onClick={() => setActiveView("community")}>
+          <Home size={24} />
+          Home
+        </button>
+        <button type="button">
+          <Heart size={24} />
+          Care
+        </button>
+        <button type="button">
+          <Gamepad2 size={24} />
+          Play
+        </button>
+        <button type="button">
+          <ShoppingCart size={24} />
+          Shop
+        </button>
+        <button className={activeView === "rankings" ? "is-active" : ""} type="button" onClick={() => setActiveView("rankings")}>
+          <Trophy size={24} />
+          Rankings
+        </button>
+        <button type="button">
+          <Settings size={24} />
+          Settings
+        </button>
+      </nav>
     </main>
   );
 }
 
-type IndividualResultProps = {
+type IndividualWorkspaceProps = {
+  username: string;
   status: ReturnType<typeof usePet>["status"];
   pet: IndividualPet | null;
   error: string | null;
   isDormant: boolean;
   isDegraded: boolean;
   design: PetDesign;
+  displayName: string;
   hatchDesign: PetDesign;
   hasHatched: boolean;
   equippedAccessories: EquippedAccessories;
+  onUsernameChange: (username: string) => void;
+  onLookup: (event: FormEvent<HTMLFormElement>) => void;
   onHatchDesignChange: (design: PetDesign) => void;
   onHatch: () => void;
   onToggleAccessory: (slot: PetAccessorySlot, accessory: PetAccessory | "none") => void;
+  onBackgroundChange: (background: PetBackground) => void;
+  onCustomize: (input: { displayName: string; design: PetDesign }) => void | Promise<void>;
 };
 
-function IndividualResult({
+function IndividualWorkspace({
+  username,
   status,
   pet,
   error,
@@ -294,29 +399,57 @@ function IndividualResult({
   hatchDesign,
   hasHatched,
   equippedAccessories,
+  onUsernameChange,
+  onLookup,
   onHatchDesignChange,
   onHatch,
-  onToggleAccessory
-}: IndividualResultProps) {
-  if (status === "idle") {
-    return (
-      <section className="toy-panel individual-card empty-state">
-        <div className="panel-heading">
-          <div>
-            <span className="eyebrow">Individual Pushpet</span>
-            <h2>Get a Pushpet</h2>
-          </div>
-          <Sparkles size={24} />
+  onToggleAccessory,
+  onBackgroundChange
+}: IndividualWorkspaceProps) {
+  const [expandedPanel, setExpandedPanel] = useState<"place" | "accessories" | "feed" | null>(null);
+  const lookupDisabled = status === "loading" || !username.trim();
+  let workspaceClass = "is-empty";
+  let stage = (
+    <PetStageDisplay
+      score={0}
+      mood="curious"
+      evolutionStage="egg"
+      species={hatchDesign.species}
+      color={hatchDesign.color}
+      background={hatchDesign.background}
+      showPet={false}
+    />
+  );
+  let stageMeters: ReactNode = null;
+  let controls = (
+    <section className="toy-panel individual-card empty-state individual-guidance">
+      <div className="panel-heading">
+        <div>
+          <span className="eyebrow">Individual Pushpet</span>
+          <h2>Get a Pushpet</h2>
         </div>
-        <PetStageDisplay score={0} mood="curious" evolutionStage="egg" species="goat_dragon" color="blue" />
-        <p className="quiet-copy">Enter a GitHub username above.</p>
-      </section>
-    );
-  }
+        <Sparkles size={24} />
+      </div>
+      <p className="quiet-copy">Enter a GitHub username to hatch or load an individual Pushpet.</p>
+    </section>
+  );
 
-  if (status === "loading") {
-    return (
-      <section className="toy-panel individual-card empty-state">
+  if (status === "idle") {
+    workspaceClass = "is-empty";
+  } else if (status === "loading") {
+    workspaceClass = "is-loading";
+    stage = (
+      <PetStageDisplay
+        score={0}
+        mood="loading"
+        evolutionStage="egg"
+        species={design.species}
+        color={design.color}
+        background={design.background}
+      />
+    );
+    controls = (
+      <section className="toy-panel individual-card empty-state individual-guidance">
         <div className="panel-heading">
           <div>
             <span className="eyebrow">Individual Pushpet</span>
@@ -324,15 +457,24 @@ function IndividualResult({
           </div>
           <Loader2 className="spin" size={24} />
         </div>
-        <PetStageDisplay score={0} mood="loading" evolutionStage="egg" species={design.species} color={design.color} />
         <p className="quiet-copy">Checking for an existing Pushpet.</p>
       </section>
     );
-  }
-
-  if (status === "not_found") {
-    return (
-      <section className="toy-panel individual-card empty-state">
+  } else if (status === "not_found") {
+    workspaceClass = "is-error";
+    stage = (
+      <PetStageDisplay
+        score={0}
+        mood="lost"
+        evolutionStage="egg"
+        dormancyState="sad"
+        species={design.species}
+        color={design.color}
+        background={design.background}
+      />
+    );
+    controls = (
+      <section className="toy-panel individual-card empty-state individual-guidance">
         <div className="panel-heading">
           <div>
             <span className="eyebrow">No hatch</span>
@@ -340,15 +482,23 @@ function IndividualResult({
           </div>
           <AlertTriangle size={24} />
         </div>
-        <PetStageDisplay score={0} mood="lost" evolutionStage="egg" dormancyState="sad" species={design.species} color={design.color} />
         <p className="quiet-copy">{error ?? "That GitHub username did not hatch. Try another spelling."}</p>
       </section>
     );
-  }
-
-  if (!pet) {
-    return (
-      <section className="toy-panel individual-card empty-state">
+  } else if (!pet) {
+    workspaceClass = "is-error";
+    stage = (
+      <PetStageDisplay
+        score={0}
+        mood="retry"
+        evolutionStage="egg"
+        species={design.species}
+        color={design.color}
+        background={design.background}
+      />
+    );
+    controls = (
+      <section className="toy-panel individual-card empty-state individual-guidance">
         <div className="panel-heading">
           <div>
             <span className="eyebrow">Retry hatch</span>
@@ -356,28 +506,52 @@ function IndividualResult({
           </div>
           <RotateCw size={24} />
         </div>
-        <PetStageDisplay score={0} mood="retry" evolutionStage="egg" species={design.species} color={design.color} />
         <p className="quiet-copy">{error ?? "PushPet could not hatch that lookup yet."}</p>
       </section>
     );
-  }
-
-  if (!hasHatched) {
-    return (
-      <section className="toy-panel individual-card empty-state">
-        <div className="pet-nameplate">
-          <img src={pet.avatar_url} alt="" className="avatar" />
-          <div>
-            <span className="eyebrow">New Pushpet</span>
-            <h2>@{pet.username}</h2>
+  } else if (!hasHatched) {
+    workspaceClass = "is-new";
+    stage = (
+      <PetStageDisplay
+        score={0}
+        mood="curious"
+        evolutionStage="egg"
+        species={hatchDesign.species}
+        color={hatchDesign.color}
+        background={hatchDesign.background}
+      />
+    );
+    stageMeters = (
+      <section className="individual-stage-meters">
+        <CareMeters
+          hunger={pet.hunger}
+          happiness={pet.happiness}
+          score={0}
+          evolutionStage="egg"
+          level={1}
+          mood="new"
+          pushes={pet.recent_pushes_30d}
+          streakDays={pet.streak_days}
+          prSignals={pet.recent_prs_30d}
+          activeRepos={pet.active_repo_count_30d}
+        />
+      </section>
+    );
+    controls = (
+      <>
+        <section className="toy-panel individual-card individual-summary-card">
+          <div className="pet-nameplate">
+            <img src={pet.avatar_url} alt="" className="avatar" />
+            <div>
+              <span className="eyebrow">New Pushpet</span>
+              <h2>@{pet.username}</h2>
+            </div>
+            {isDegraded && <span className="degraded-sticker">cached</span>}
           </div>
-          {isDegraded && <span className="degraded-sticker">cached</span>}
-        </div>
-        <PetStageDisplay score={0} mood="curious" evolutionStage="egg" species={hatchDesign.species} color={hatchDesign.color} />
-        <CareMeters hunger={pet.hunger} happiness={pet.happiness} score={0} evolutionStage="egg" />
-        <div className="community-hatch-box individual-hatch-box">
+        </section>
+        <section className="toy-panel individual-card individual-hatch-box">
           <PetDesignControls
-            title="Choose shell"
+            title="Choose pet"
             design={hatchDesign}
             speciesOptions={speciesOptions}
             colorOptions={colorOptions}
@@ -386,22 +560,15 @@ function IndividualResult({
           <button className="hatch-community-button" type="button" onClick={onHatch}>
             Hatch @{pet.username}
           </button>
-        </div>
-        <ActivitySummary pet={pet} />
-      </section>
+        </section>
+        <section className="toy-panel individual-card">
+          <ActivitySummary pet={pet} />
+        </section>
+      </>
     );
-  }
-
-  return (
-    <section className={`toy-panel individual-card ${isDormant ? "is-dormant" : "is-active"}`}>
-      <div className="pet-nameplate">
-        <img src={pet.avatar_url} alt="" className="avatar" />
-        <div>
-          <span className="eyebrow">{isDormant ? "Dormant find" : "Active find"}</span>
-          <h2>@{pet.username}</h2>
-        </div>
-        {isDegraded && <span className="degraded-sticker">cached</span>}
-      </div>
+  } else {
+    workspaceClass = isDormant ? "is-dormant" : "is-active";
+    stage = (
       <PetStageDisplay
         score={pet.pet_score}
         mood={pet.mood}
@@ -411,12 +578,132 @@ function IndividualResult({
         seed={pet.username}
         species={design.species}
         color={design.color}
+        background={design.background}
       />
-      <ActivitySummary pet={pet} />
-      <CareMeters hunger={pet.hunger} happiness={pet.happiness} score={pet.pet_score} evolutionStage={pet.evolution_stage} />
-      <PetStatsPanel pet={pet} mode="individual" />
-      <OutfitUnlocks outfits={pet.outfit_unlocks} equipped={equippedAccessories} onToggleAccessory={onToggleAccessory} />
-      <FeedLog title="Hatch feed" items={pet.feed_log} />
+    );
+    stageMeters = (
+      <section className="individual-stage-meters">
+        <CareMeters
+          hunger={pet.hunger}
+          happiness={pet.happiness}
+          score={pet.pet_score}
+          evolutionStage={pet.evolution_stage}
+          level={pet.level}
+          mood={pet.mood}
+          pushes={pet.recent_pushes_30d}
+          streakDays={pet.streak_days}
+          prSignals={pet.recent_prs_30d}
+          activeRepos={pet.active_repo_count_30d}
+        />
+      </section>
+    );
+    controls = (
+      <>
+        <section className="toy-panel individual-card individual-summary-card">
+          <div className="pet-nameplate">
+            <img src={pet.avatar_url} alt="" className="avatar" />
+            <div>
+              <a href={pet.profile_url} target="_blank" rel="noreferrer" className="github-name-link">
+                <Github size={17} />
+                @{pet.username}
+              </a>
+            </div>
+            <span className="eyebrow status-corner">{isDormant ? "Dormant find" : "Active find"}</span>
+            {isDegraded && <span className="degraded-sticker">cached</span>}
+          </div>
+        </section>
+        <div className={`individual-panel-stack ${expandedPanel ? "has-expanded" : ""}`}>
+          <CollapsiblePanel
+            id="place"
+            title="Pet place"
+            expandedPanel={expandedPanel}
+            onToggle={setExpandedPanel}
+          >
+            <PetBackgroundControls value={normalizePetBackground(design.background)} onChange={onBackgroundChange} title="Pet place" />
+          </CollapsiblePanel>
+          <CollapsiblePanel
+            id="accessories"
+            title="Outfit and accessories"
+            expandedPanel={expandedPanel}
+            onToggle={setExpandedPanel}
+          >
+            <OutfitUnlocks outfits={pet.outfit_unlocks} equipped={equippedAccessories} onToggleAccessory={onToggleAccessory} />
+          </CollapsiblePanel>
+          <CollapsiblePanel
+            id="feed"
+            title="Hatch feed"
+            expandedPanel={expandedPanel}
+            onToggle={setExpandedPanel}
+          >
+            <FeedLog title="Hatch feed" items={pet.feed_log} />
+          </CollapsiblePanel>
+        </div>
+      </>
+    );
+  }
+
+  return (
+    <section className={`individual-workspace ${workspaceClass}`}>
+      <div className="individual-page-heading">
+        <div>
+          <span className="sticker-label">Individual Pushpet</span>
+          <h2>Get individual Pushpet</h2>
+        </div>
+        <ToyBrick size={28} />
+      </div>
+      <div className="individual-stage-column">
+        {stage}
+        {stageMeters}
+      </div>
+      <aside className="individual-control-column">
+        <section className="toy-panel hatch-panel individual-lookup-panel">
+          <form className="lookup-form" onSubmit={onLookup}>
+            <label htmlFor="individual-github-username">GitHub username</label>
+            <div className="lookup-row">
+              <Github aria-hidden="true" size={20} />
+              <input
+                id="individual-github-username"
+                value={username}
+                onChange={(event) => onUsernameChange(event.target.value)}
+                placeholder="octocat"
+                autoComplete="off"
+                spellCheck={false}
+              />
+              <button type="submit" disabled={lookupDisabled} aria-label="Get individual Pushpet">
+                {status === "loading" ? <Loader2 className="spin" size={20} /> : <ArrowRight size={20} />}
+              </button>
+            </div>
+          </form>
+        </section>
+        {controls}
+      </aside>
+    </section>
+  );
+}
+
+type CollapsiblePanelProps = {
+  id: "place" | "accessories" | "feed";
+  title: string;
+  expandedPanel: "place" | "accessories" | "feed" | null;
+  onToggle: (panel: "place" | "accessories" | "feed" | null) => void;
+  children: ReactNode;
+};
+
+function CollapsiblePanel({ id, title, expandedPanel, onToggle, children }: CollapsiblePanelProps) {
+  const isExpanded = expandedPanel === id;
+
+  return (
+    <section className={`toy-panel individual-card individual-collapsible ${isExpanded ? "is-expanded" : ""}`}>
+      <button
+        className="individual-collapsible-trigger"
+        type="button"
+        onClick={() => onToggle(isExpanded ? null : id)}
+        aria-expanded={isExpanded}
+      >
+        <span>{title}</span>
+        <span aria-hidden="true">{isExpanded ? "-" : "+"}</span>
+      </button>
+      {isExpanded && <div className="individual-collapsible-body">{children}</div>}
     </section>
   );
 }

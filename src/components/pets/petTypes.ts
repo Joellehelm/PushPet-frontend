@@ -2,6 +2,8 @@ export type PetSpecies = "goat_dragon" | "raccoon" | "star_axolotl";
 export type PetStage = "egg" | "baby" | "adolescent" | "adult";
 export type PetMood = "idle" | "happy" | "hungry" | "sleepy" | "hyped" | "sad" | "sick";
 export type PetColor = "blue" | "pink" | "green" | "purple" | "orange" | "white";
+export type PetBackground = "petplace1" | "petplace2" | "petplace3";
+export type PetEnvironment = PetBackground | "aqua" | "sunny" | "night" | "garden";
 export type PetAccessory =
   | "none"
   | "ruby_crown"

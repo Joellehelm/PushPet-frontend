@@ -70,8 +70,6 @@ def touches_edge(image: Image.Image, margin: int = 3) -> bool:
 def accessory_visible(stage: str, accessory: str) -> bool:
     if stage == "egg" or accessory == "none":
         return False
-    if stage == "baby" and accessory in {"go_jetpack", "rust_armor_accent"}:
-        return False
     return True
 
 
@@ -115,10 +113,17 @@ def make_contact_sheet(species: str, base: Image.Image, accessories: Image.Image
             for accessory_index, accessory in enumerate(ACCESSORIES):
                 x = left_w + accessory_index * cell_w + 12
                 composite = Image.new("RGBA", (CELL, CELL), (0, 0, 0, 0))
-                composite.alpha_composite(base_sprite)
                 if accessory_visible(stage, accessory):
                     accessory_row = (VISIBLE_ACCESSORIES.index(accessory) * len(MOODS)) + MOODS.index(mood)
-                    composite.alpha_composite(crop_cell(accessories, stage_index, accessory_row))
+                    accessory_sprite = crop_cell(accessories, stage_index, accessory_row)
+                    if accessory == "go_jetpack":
+                        composite.alpha_composite(accessory_sprite)
+                        composite.alpha_composite(base_sprite)
+                    else:
+                        composite.alpha_composite(base_sprite)
+                        composite.alpha_composite(accessory_sprite)
+                else:
+                    composite.alpha_composite(base_sprite)
                 paste_preview(out, composite, x, y + 10)
             row_index += 1
 
@@ -195,8 +200,12 @@ def inspect_species(species: str) -> dict[str, object]:
                     base_row = review_color_index * len(MOODS) + mood_index
                     composite = Image.new("RGBA", (CELL, CELL), (0, 0, 0, 0))
                     base_cell = crop_cell(base, stage_index, base_row)
-                    composite.alpha_composite(base_cell)
-                    composite.alpha_composite(accessory_cell)
+                    if accessory == "go_jetpack":
+                        composite.alpha_composite(accessory_cell)
+                        composite.alpha_composite(base_cell)
+                    else:
+                        composite.alpha_composite(base_cell)
+                        composite.alpha_composite(accessory_cell)
                     if touches_edge(composite):
                         issues.append(f"composite touches cell edge {accessory}/{mood}/{stage}")
                     base_box = alpha_bbox(base_cell)

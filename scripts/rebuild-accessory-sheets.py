@@ -27,6 +27,196 @@ INK = (36, 22, 51, 255)
 REVIEW_COLOR = "purple"
 
 
+ANCHORS = {
+    "goat_dragon": {
+        "baby": {
+            "head": (126, 72, 0.62),
+            "face": (126, 108, 0.70),
+            "body": (126, 141, 0.72),
+            "back": (84, 124, 0.56),
+        },
+        "adolescent": {
+            "head": (122, 58, 0.72),
+            "face": (122, 101, 0.78),
+            "body": (126, 143, 0.88),
+            "back": (40, 128, 0.76),
+        },
+        "adult": {
+            "head": (120, 45, 0.84),
+            "face": (120, 91, 0.88),
+            "body": (127, 146, 1.00),
+            "back": (38, 124, 0.84),
+        },
+    },
+    "raccoon": {
+        "baby": {
+            "head": (128, 67, 0.62),
+            "face": (128, 105, 0.72),
+            "body": (128, 144, 0.78),
+            "back": (82, 130, 0.58),
+        },
+        "adolescent": {
+            "head": (124, 54, 0.70),
+            "face": (124, 96, 0.78),
+            "body": (127, 147, 0.90),
+            "back": (40, 128, 0.76),
+        },
+        "adult": {
+            "head": (123, 43, 0.80),
+            "face": (123, 88, 0.88),
+            "body": (128, 149, 1.00),
+            "back": (38, 126, 0.84),
+        },
+    },
+    "star_axolotl": {
+        "baby": {
+            "head": (128, 73, 0.58),
+            "face": (128, 112, 0.68),
+            "body": (128, 146, 0.72),
+            "back": (82, 136, 0.52),
+        },
+        "adolescent": {
+            "head": (128, 60, 0.68),
+            "face": (128, 101, 0.78),
+            "body": (128, 147, 0.86),
+            "back": (40, 132, 0.76),
+        },
+        "adult": {
+            "head": (128, 49, 0.78),
+            "face": (128, 92, 0.86),
+            "body": (128, 148, 1.00),
+            "back": (38, 130, 0.84),
+        },
+    },
+}
+
+MOOD_OFFSETS = {
+    "idle": {},
+    "happy": {},
+    "hyped": {
+        "head": (0, -2, 1.02, 4),
+        "face": (0, -2, 1.02, 4),
+        "body": (0, -2, 1.00, 3),
+        "back": (0, -2, 1.00, 3),
+    },
+    "hungry": {
+        "head": (-4, 8, 0.96, -4),
+        "face": (-4, 7, 0.96, -4),
+        "body": (-3, 5, 0.98, -3),
+        "back": (-3, 4, 0.98, -3),
+    },
+    "sad": {
+        "head": (-4, 8, 0.96, -4),
+        "face": (-4, 7, 0.96, -4),
+        "body": (-3, 5, 0.98, -3),
+        "back": (-3, 4, 0.98, -3),
+    },
+    "sleepy": {
+        "head": (-18, 28, 0.88, -12),
+        "face": (-18, 28, 0.90, -9),
+        "body": (-13, 22, 0.92, -8),
+        "back": (-2, 20, 0.92, -8),
+    },
+    "sick": {
+        "head": (-18, 28, 0.88, -12),
+        "face": (-18, 28, 0.90, -9),
+        "body": (-13, 22, 0.92, -8),
+        "back": (-2, 20, 0.92, -8),
+    },
+}
+
+
+POSE_OFFSETS = {
+    "goat_dragon": {
+        "baby": {
+            "idle": {"face": (0, 8, 1.02, 0)},
+            "happy": {"face": (0, 8, 1.02, 0)},
+            "hyped": {"face": (0, 6, 1.02, 0)},
+            "hungry": {"head": (2, -1, 1.02, 2), "face": (2, 7, 1.02, 2), "body": (1, 0, 1.02, 1), "back": (2, 0, 1.02, 1)},
+            "sad": {"head": (2, -1, 1.02, 2), "face": (2, 7, 1.02, 2), "body": (1, 0, 1.02, 1), "back": (2, 0, 1.02, 1)},
+            "sleepy": {"head": (6, -4, 1.05, 2), "face": (7, -5, 1.04, 2), "body": (5, -3, 1.04, 2), "back": (2, -4, 1.03, 1)},
+            "sick": {"head": (6, -4, 1.05, 2), "face": (7, -5, 1.04, 2), "body": (5, -3, 1.04, 2), "back": (2, -4, 1.03, 1)},
+        },
+        "adolescent": {
+            "idle": {"face": (0, 13, 1.02, 0)},
+            "happy": {"face": (0, 13, 1.02, 0)},
+            "hyped": {"face": (0, 11, 1.02, 0)},
+            "hungry": {"head": (3, -2, 1.03, 1), "face": (3, 11, 1.03, 1), "body": (2, -1, 1.02, 1), "back": (2, -1, 1.02, 1)},
+            "sad": {"head": (3, -2, 1.03, 1), "face": (3, 11, 1.03, 1), "body": (2, -1, 1.02, 1), "back": (2, -1, 1.02, 1)},
+            "sleepy": {"head": (8, -3, 1.04, 2), "face": (8, -4, 1.04, 2), "body": (7, -3, 1.03, 2), "back": (3, -2, 1.02, 1)},
+            "sick": {"head": (8, -3, 1.04, 2), "face": (8, -4, 1.04, 2), "body": (7, -3, 1.03, 2), "back": (3, -2, 1.02, 1)},
+        },
+        "adult": {
+            "idle": {"face": (0, 22, 1.03, 0)},
+            "happy": {"face": (0, 22, 1.03, 0)},
+            "hyped": {"face": (0, 18, 1.03, 0)},
+            "hungry": {"head": (4, -2, 1.04, 1), "face": (4, 17, 1.03, 1), "body": (3, -1, 1.02, 1), "back": (2, -1, 1.02, 1)},
+            "sad": {"head": (4, -2, 1.04, 1), "face": (4, 17, 1.03, 1), "body": (3, -1, 1.02, 1), "back": (2, -1, 1.02, 1)},
+            "sleepy": {"head": (9, 0, 1.05, 2), "face": (9, -1, 1.04, 2), "body": (8, -1, 1.03, 2), "back": (3, 0, 1.02, 1)},
+            "sick": {"head": (9, 0, 1.05, 2), "face": (9, -1, 1.04, 2), "body": (8, -1, 1.03, 2), "back": (3, 0, 1.02, 1)},
+        },
+    },
+    "raccoon": {
+        "baby": {
+            "hungry": {"head": (0, -3, 1.03, 2), "face": (0, -3, 1.03, 2), "body": (0, -1, 1.02, 1), "back": (2, -1, 1.02, 1)},
+            "sad": {"head": (0, -3, 1.03, 2), "face": (0, -3, 1.03, 2), "body": (0, -1, 1.02, 1), "back": (2, -1, 1.02, 1)},
+            "sleepy": {"head": (3, -8, 1.05, 5), "face": (4, -8, 1.04, 4), "body": (4, -7, 1.03, 3), "back": (4, -6, 1.02, 2)},
+            "sick": {"head": (3, -8, 1.05, 5), "face": (4, -8, 1.04, 4), "body": (4, -7, 1.03, 3), "back": (4, -6, 1.02, 2)},
+        },
+        "adolescent": {
+            "hungry": {"head": (1, -5, 1.04, 3), "face": (1, -5, 1.03, 3), "body": (1, -2, 1.02, 1), "back": (3, -2, 1.02, 1)},
+            "sad": {"head": (1, -5, 1.04, 3), "face": (1, -5, 1.03, 3), "body": (1, -2, 1.02, 1), "back": (3, -2, 1.02, 1)},
+            "sleepy": {"head": (15, -8, 1.08, 10), "face": (15, -9, 1.07, 8), "body": (12, -7, 1.04, 6), "back": (7, -5, 1.02, 3)},
+            "sick": {"head": (15, -8, 1.08, 10), "face": (15, -9, 1.07, 8), "body": (12, -7, 1.04, 6), "back": (7, -5, 1.02, 3)},
+        },
+        "adult": {
+            "hungry": {"head": (2, -5, 1.04, 3), "face": (2, -5, 1.03, 3), "body": (1, -2, 1.02, 1), "back": (3, -2, 1.02, 1)},
+            "sad": {"head": (2, -5, 1.04, 3), "face": (2, -5, 1.03, 3), "body": (1, -2, 1.02, 1), "back": (3, -2, 1.02, 1)},
+            "sleepy": {"head": (9, 3, 1.08, 8), "face": (9, 2, 1.07, 7), "body": (8, 2, 1.04, 5), "back": (6, 1, 1.02, 3)},
+            "sick": {"head": (9, 3, 1.08, 8), "face": (9, 2, 1.07, 7), "body": (8, 2, 1.04, 5), "back": (6, 1, 1.02, 3)},
+        },
+    },
+    "star_axolotl": {
+        "baby": {
+            "hungry": {"head": (2, -2, 1.02, 2), "face": (2, -2, 1.02, 2), "body": (1, -1, 1.02, 1), "back": (2, -1, 1.02, 1)},
+            "sad": {"head": (2, -2, 1.02, 2), "face": (2, -2, 1.02, 2), "body": (1, -1, 1.02, 1), "back": (2, -1, 1.02, 1)},
+            "sleepy": {"head": (4, -8, 1.04, 4), "face": (5, -8, 1.04, 3), "body": (5, -6, 1.03, 3), "back": (4, -6, 1.02, 2)},
+            "sick": {"head": (4, -8, 1.04, 4), "face": (5, -8, 1.04, 3), "body": (5, -6, 1.03, 3), "back": (4, -6, 1.02, 2)},
+        },
+        "adolescent": {
+            "hungry": {"head": (3, -2, 1.03, 2), "face": (3, -2, 1.03, 2), "body": (2, -1, 1.02, 1), "back": (2, -1, 1.02, 1)},
+            "sad": {"head": (3, -2, 1.03, 2), "face": (3, -2, 1.03, 2), "body": (2, -1, 1.02, 1), "back": (2, -1, 1.02, 1)},
+            "sleepy": {"head": (7, -2, 1.04, 4), "face": (7, -3, 1.04, 3), "body": (6, -2, 1.03, 3), "back": (4, -2, 1.02, 2)},
+            "sick": {"head": (7, -2, 1.04, 4), "face": (7, -3, 1.04, 3), "body": (6, -2, 1.03, 3), "back": (4, -2, 1.02, 2)},
+        },
+        "adult": {
+            "hungry": {"head": (3, -2, 1.03, 2), "face": (3, -2, 1.03, 2), "body": (2, -1, 1.02, 1), "back": (2, -1, 1.02, 1)},
+            "sad": {"head": (3, -2, 1.03, 2), "face": (3, -2, 1.03, 2), "body": (2, -1, 1.02, 1), "back": (2, -1, 1.02, 1)},
+            "sleepy": {"head": (7, 1, 1.04, 4), "face": (7, 0, 1.04, 3), "body": (6, 0, 1.03, 3), "back": (4, 0, 1.02, 2)},
+            "sick": {"head": (7, 1, 1.04, 4), "face": (7, 0, 1.04, 3), "body": (6, 0, 1.03, 3), "back": (4, 0, 1.02, 2)},
+        },
+    },
+}
+
+
+def combine_offsets(*offsets: tuple[float, float, float, float]) -> tuple[float, float, float, float]:
+    dx = sum(offset[0] for offset in offsets)
+    dy = sum(offset[1] for offset in offsets)
+    scale = 1.0
+    angle = 0.0
+    for offset in offsets:
+        scale *= offset[2]
+        angle += offset[3]
+    return dx, dy, scale, angle
+
+
+def pose_offset(species: str, stage: str, mood: str, part: str) -> tuple[float, float, float, float]:
+    neutral = (0, 0, 1, 0)
+    mood_offset = MOOD_OFFSETS.get(mood, {}).get(part, neutral)
+    stage_offset = POSE_OFFSETS.get(species, {}).get(stage, {}).get(mood, {}).get(part, neutral)
+    return combine_offsets(mood_offset, stage_offset)
+
+
 def crop_cell(sheet: Image.Image, col: int, row: int) -> Image.Image:
     return sheet.crop((col * CELL, row * CELL, (col + 1) * CELL, (row + 1) * CELL))
 
@@ -199,108 +389,28 @@ def base_row(mood: str) -> int:
     return COLORS.index(REVIEW_COLOR) * len(MOODS) + MOODS.index(mood)
 
 
-def pose(species: str, stage: str, mood: str, cell: Image.Image) -> dict[str, float]:
-    left, top, right, bottom = alpha_bbox(cell)
-    width = right - left
-    height = bottom - top
-    center = left + width * 0.5
-    upright = mood in {"idle", "happy", "hyped"}
-    sleepy = mood in {"sleepy", "sick"}
-    droopy = mood in {"hungry", "sad"}
-
-    values = {
-        "head_x": center,
-        "head_y": top + height * 0.14,
-        "head_scale": width / 190,
-        "head_angle": 0.0,
-        "face_x": center,
-        "face_y": top + height * 0.42,
-        "face_scale": width / 190,
-        "face_angle": 0.0,
-        "body_x": center,
-        "body_y": top + height * 0.63,
-        "body_scale": width / 190,
-        "body_angle": 0.0,
-        "back_x": right - width * 0.14,
-        "back_y": top + height * 0.56,
-        "back_scale": width / 190,
-        "back_angle": 0.0,
-    }
-
-    if species == "goat_dragon":
-        if stage == "baby":
-            values.update(head_y=top + height * 0.115, head_scale=0.50, face_y=top + height * 0.43, face_scale=0.54)
-        elif stage == "adolescent":
-            values.update(head_y=top + height * 0.10, head_scale=0.57, face_y=top + height * 0.40, face_scale=0.60)
-        else:
-            values.update(head_y=top + height * 0.09, head_scale=0.62, face_y=top + height * 0.38, face_scale=0.64)
-        if sleepy:
-            values.update(
-                head_x=left + width * 0.36,
-                head_y=top + height * 0.165,
-                head_scale=values["head_scale"] * 0.86,
-                head_angle=-15,
-                face_x=left + width * 0.41,
-                face_y=top + height * 0.515,
-                face_scale=values["face_scale"] * 0.88,
-                face_angle=-8,
-                body_x=left + width * 0.47,
-                body_y=top + height * 0.60,
-                body_angle=-8,
-                back_x=right - width * 0.22,
-                back_y=top + height * 0.54,
-                back_angle=-8,
-            )
-        elif droopy:
-            values.update(head_x=left + width * 0.46, head_y=top + height * 0.15, head_angle=-5, face_x=left + width * 0.45, face_y=top + height * 0.43)
-        elif upright:
-            values.update(head_angle=4 if mood == "hyped" else 0, face_angle=3 if mood == "hyped" else 0)
-    elif species == "raccoon":
-        values.update(head_y=top + height * 0.13, face_y=top + height * 0.40, head_scale=width / 205, face_scale=width / 205)
-        if sleepy:
-            values.update(
-                head_x=left + width * 0.42,
-                head_y=top + height * 0.18,
-                head_angle=-10,
-                face_x=left + width * 0.43,
-                face_y=top + height * 0.455,
-                face_scale=values["face_scale"] * 0.94,
-                face_angle=-6,
-            )
-        elif droopy:
-            values.update(head_y=top + height * 0.16, head_angle=-4, face_y=top + height * 0.43)
-    else:
-        values.update(head_y=top + height * 0.19, face_y=top + height * 0.45, head_scale=width / 215, face_scale=width / 205)
-        if sleepy:
-            values.update(
-                head_x=left + width * 0.43,
-                head_y=top + height * 0.22,
-                head_angle=-8,
-                face_x=left + width * 0.44,
-                face_y=top + height * 0.49,
-                face_scale=values["face_scale"] * 0.94,
-                face_angle=-4,
-            )
-        elif droopy:
-            values.update(head_y=top + height * 0.21, head_angle=-3)
-
-    return values
+def anchor(species: str, stage: str, mood: str, part: str) -> tuple[float, float, float, float]:
+    x, y, scale = ANCHORS[species][stage][part]
+    dx, dy, scale_factor, angle = pose_offset(species, stage, mood, part)
+    return x + dx, y + dy, scale * scale_factor, angle
 
 
 def placement(accessory: str, species: str, stage: str, mood: str, cell: Image.Image) -> tuple[float, float, float, float]:
-    p = pose(species, stage, mood, cell)
     if accessory in {"ruby_crown", "caretaker_crown"}:
-        scale = p["head_scale"] * (1.00 if accessory == "ruby_crown" else 1.04)
-        return p["head_x"], p["head_y"], scale, p["head_angle"]
+        x, y, scale, angle = anchor(species, stage, mood, "head")
+        return x, y, scale * (0.78 if accessory == "ruby_crown" else 0.82), angle
     if accessory == "python_wizard_hat":
-        return p["head_x"] + 2, p["head_y"] - 5, p["head_scale"] * 1.02, p["head_angle"] - 2
+        x, y, scale, angle = anchor(species, stage, mood, "head")
+        return x + 1, y - 6, scale * 0.72, angle - 2
     if accessory in {"javascript_shades", "typescript_visor"}:
-        scale = p["face_scale"] * (0.92 if accessory == "javascript_shades" else 0.96)
-        return p["face_x"], p["face_y"], scale, p["face_angle"]
+        x, y, scale, angle = anchor(species, stage, mood, "face")
+        return x, y, scale * (0.76 if accessory == "javascript_shades" else 0.80), angle
     if accessory == "rust_armor_accent":
-        return p["body_x"], p["body_y"], p["body_scale"] * 0.70, p["body_angle"]
+        x, y, scale, angle = anchor(species, stage, mood, "body")
+        return x, y, scale * 0.70, angle
     if accessory == "go_jetpack":
-        return p["back_x"], p["back_y"], p["back_scale"] * 0.68, p["back_angle"]
+        x, y, scale, angle = anchor(species, stage, mood, "back")
+        return x, y, scale * 0.82, angle - 8
     return 128, 128, 1, 0
 
 
@@ -325,8 +435,6 @@ def paste_accessory(cell: Image.Image, accessory_image: Image.Image, center_x: f
 
 def should_render(stage: str, accessory: str) -> bool:
     if stage == "egg":
-        return False
-    if stage == "baby" and accessory in {"rust_armor_accent", "go_jetpack"}:
         return False
     return True
 

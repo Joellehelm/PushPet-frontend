@@ -1,24 +1,29 @@
 import { useState } from "react";
 import { normalizeColor, normalizeEquipment, normalizeSpecies, slotForAccessory } from "../assets/pets/petManifest";
-import type { EquippedAccessories, PetAccessory, PetAccessorySlot, PetColor, PetSpecies } from "../components/pets/petTypes";
+import { normalizePetBackground } from "../components/PetBackgroundControls";
+import type { EquippedAccessories, PetAccessory, PetAccessorySlot, PetBackground, PetColor, PetSpecies } from "../components/pets/petTypes";
 import type { PushpetRecord } from "../types/pushpet";
 
 export type IndividualPushpetRecord = {
   username: string;
+  display_name: string | null;
   species: PetSpecies;
   color: PetColor;
   accessory: PetAccessory;
   equipped: EquippedAccessories;
+  background: PetBackground;
   hatched_at: string;
 };
 
 function normalizeRecord(record: PushpetRecord): IndividualPushpetRecord {
   return {
     username: record.username,
+    display_name: record.display_name?.trim() || null,
     species: normalizeSpecies(record.species),
     color: normalizeColor(record.color),
     accessory: (record.accessory as PetAccessory) ?? "none",
     equipped: normalizeEquipment(record.equipped, record.accessory),
+    background: normalizePetBackground(record.background),
     hatched_at: record.hatched_at
   };
 }
@@ -63,10 +68,34 @@ export function useIndividualPushpets() {
     );
   }
 
+  function updateBackground(username: string, background: PetBackground) {
+    setRecords((current) =>
+      current.map((record) => (record.username.toLowerCase() === username.trim().toLowerCase() ? { ...record, background } : record))
+    );
+  }
+
+  function updateCustomization(username: string, input: { display_name?: string | null; species?: PetSpecies; color?: PetColor; background?: PetBackground }) {
+    setRecords((current) =>
+      current.map((record) => {
+        if (record.username.toLowerCase() !== username.trim().toLowerCase()) return record;
+
+        return {
+          ...record,
+          display_name: input.display_name === undefined ? record.display_name : input.display_name?.trim() || null,
+          species: input.species ?? record.species,
+          color: input.color ?? record.color,
+          background: input.background ?? record.background
+        };
+      })
+    );
+  }
+
   return {
     records,
     findRecord,
     upsert,
-    updateAccessorySlot
+    updateAccessorySlot,
+    updateBackground,
+    updateCustomization
   };
 }

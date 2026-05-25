@@ -18,7 +18,7 @@ export function useCommunityPet() {
       setStatus("ready");
     } catch (caught) {
       setCommunityPet((current) => current ?? defaultCommunityPet());
-      setError(caught instanceof Error ? caught.message : "PushPet backend is waking up.");
+      setError(caught instanceof Error ? caught.message : "Community Pushpet could not load.");
       setStatus("error");
     }
   }, []);
@@ -61,7 +61,10 @@ function defaultCommunityPet(): CommunityPet {
   return {
     featured_name: "Pushpet Prime",
     display_title: "Community Pushpet",
+    species: "goat_dragon",
+    color: "purple",
     outfit: "none",
+    environment: "petplace1",
     community_score: 0,
     level: 1,
     evolution_stage: "egg",

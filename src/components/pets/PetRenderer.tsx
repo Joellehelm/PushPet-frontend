@@ -1,4 +1,5 @@
 import {
+  ACCESSORY_TO_SLOT,
   PET_SPRITE_MANIFEST,
   accessoryFromUnlock,
   isAccessoryVisible,
@@ -6,7 +7,8 @@ import {
   normalizeColor,
   normalizeMood,
   normalizeSpecies,
-  normalizeStage
+  normalizeStage,
+  petSpeciesLabel
 } from "../../assets/pets/petManifest";
 import type { PetAccessory, PetColor, PetMood, PetSpecies, PetStage } from "./petTypes";
 
@@ -53,7 +55,7 @@ export function PetRenderer({
   const stageIndex = manifest.stages.indexOf(normalizedStage);
   const moodIndex = manifest.moods.indexOf(normalizedMood);
   const colorIndex = manifest.colors.indexOf(normalizedColor);
-  const label = ariaLabel ?? `${normalizedSpecies.replace("_", " ")} ${normalizedStage} Pushpet, ${normalizedMood} mood`;
+  const label = ariaLabel ?? `${petSpeciesLabel(normalizedSpecies)} ${normalizedStage} Pushpet, ${normalizedMood} mood`;
 
   const baseStyle = spriteStyle({
     x: stageIndex,
@@ -76,6 +78,8 @@ export function PetRenderer({
       })
     };
   });
+  const backAccessoryStyles = accessoryStyles.filter(({ accessory: visibleAccessory }) => isBackAccessory(visibleAccessory));
+  const foregroundAccessoryStyles = accessoryStyles.filter(({ accessory: visibleAccessory }) => !isBackAccessory(visibleAccessory));
 
   return (
     <span
@@ -86,13 +90,20 @@ export function PetRenderer({
       aria-hidden={decorative ? true : undefined}
     >
       <span className="pet-motion-layer">
+        {backAccessoryStyles.map(({ accessory: visibleAccessory, style }) => (
+          <span className={`pet-sprite-layer pet-sprite-accessory pet-accessory-${visibleAccessory}`} key={visibleAccessory} style={style} />
+        ))}
         <span className="pet-sprite-layer pet-sprite-base" style={baseStyle} />
-        {accessoryStyles.map(({ accessory: visibleAccessory, style }) => (
+        {foregroundAccessoryStyles.map(({ accessory: visibleAccessory, style }) => (
           <span className={`pet-sprite-layer pet-sprite-accessory pet-accessory-${visibleAccessory}`} key={visibleAccessory} style={style} />
         ))}
       </span>
     </span>
   );
+}
+
+function isBackAccessory(accessory: PetAccessory) {
+  return accessory !== "none" && ACCESSORY_TO_SLOT[accessory] === "back";
 }
 
 function spriteStyle({ x, y, image, rows, size }: { x: number; y: number; image: string; rows: number; size: number }) {

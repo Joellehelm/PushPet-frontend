@@ -106,7 +106,7 @@ const allAccessories: PetAccessory[] = [
 export const PET_MANIFEST: Record<PetSpecies, PetSpeciesManifest> = {
   goat_dragon: {
     species: "goat_dragon",
-    label: "Fuzzy Goat-Dragon",
+    label: "Dragoat",
     allowedAccessories: allAccessories,
     anchors: {
       egg: anchors(128, 92, 0.78, 128, 123, 0.7, 128, 150, 0.7, 86, 132, 0.75, 174, 154, 0.6, 128, 142, 0.85),
@@ -117,7 +117,7 @@ export const PET_MANIFEST: Record<PetSpecies, PetSpeciesManifest> = {
   },
   raccoon: {
     species: "raccoon",
-    label: "Raccoon-Style Creature",
+    label: "Bandit",
     allowedAccessories: allAccessories,
     anchors: {
       egg: anchors(128, 92, 0.72, 128, 123, 0.72, 128, 150, 0.66, 80, 130, 0.62, 178, 148, 0.75, 128, 142, 0.82),
@@ -128,7 +128,7 @@ export const PET_MANIFEST: Record<PetSpecies, PetSpeciesManifest> = {
   },
   star_axolotl: {
     species: "star_axolotl",
-    label: "Pixel Star Axolotl",
+    label: "Axel",
     allowedAccessories: allAccessories,
     anchors: {
       egg: anchors(128, 95, 0.7, 128, 124, 0.7, 128, 151, 0.64, 83, 132, 0.6, 174, 157, 0.58, 128, 143, 0.82),
@@ -138,6 +138,8 @@ export const PET_MANIFEST: Record<PetSpecies, PetSpeciesManifest> = {
     }
   }
 };
+
+const PET_ACCESSORY_ASSET_VERSION = "placement-20260525c";
 
 export const PET_SPRITE_MANIFEST = {
   cellSize: 256,
@@ -159,15 +161,15 @@ export const PET_SPRITE_MANIFEST = {
   species: {
     goat_dragon: {
       base: "/assets/pets/goat_dragon-base.png",
-      accessories: "/assets/pets/goat_dragon-accessories.png"
+      accessories: `/assets/pets/goat_dragon-accessories.png?v=${PET_ACCESSORY_ASSET_VERSION}`
     },
     raccoon: {
       base: "/assets/pets/raccoon-base.png",
-      accessories: "/assets/pets/raccoon-accessories.png"
+      accessories: `/assets/pets/raccoon-accessories.png?v=${PET_ACCESSORY_ASSET_VERSION}`
     },
     star_axolotl: {
       base: "/assets/pets/star_axolotl-base.png",
-      accessories: "/assets/pets/star_axolotl-accessories.png"
+      accessories: `/assets/pets/star_axolotl-accessories.png?v=${PET_ACCESSORY_ASSET_VERSION}`
     }
   } satisfies Record<PetSpecies, { base: string; accessories: string }>
 };
@@ -233,6 +235,10 @@ export function normalizeSpecies(species?: string | null): PetSpecies {
   return species === "raccoon" || species === "star_axolotl" || species === "goat_dragon" ? species : "goat_dragon";
 }
 
+export function petSpeciesLabel(species?: string | null) {
+  return PET_MANIFEST[normalizeSpecies(species)].label;
+}
+
 export function normalizeStage(stage?: string | null): PetStage {
   if (stage === "egg" || stage === "baby" || stage === "adolescent" || stage === "adult") return stage;
   if (stage === "ranger" || stage === "guardian" || stage === "legend" || stage === "legendary" || stage === "pro") return "adult";
@@ -251,12 +257,12 @@ export function stageFromEvolution(evolutionStage?: string | null, score = 0): P
 export function normalizeMood(mood?: string | null, dormancyState?: string | null): PetMood {
   if (dormancyState === "ghost" || dormancyState === "sad") return "sick";
   if (dormancyState === "peckish") return "hungry";
-  if (dormancyState === "okay") return "sleepy";
+  if (dormancyState === "okay") return "idle";
   if (mood === "idle" || mood === "happy" || mood === "hungry" || mood === "sleepy" || mood === "hyped" || mood === "sad" || mood === "sick") {
     return mood;
   }
   if (mood === "determined" || mood === "focused" || mood === "social" || mood === "sparkly" || mood === "legendary") return "happy";
-  if (mood === "patient" || mood === "cozy" || mood === "thoughtful" || mood === "tidy" || mood === "curious") return "sleepy";
+  if (mood === "patient" || mood === "cozy" || mood === "thoughtful" || mood === "tidy" || mood === "curious") return "idle";
   if (mood === "lost" || mood === "retry") return "sad";
   if (mood === "loading") return "idle";
   return "happy";
@@ -324,7 +330,6 @@ export function colorFromSeed(seed?: string | null, fallbackScore = 0): PetColor
 
 export function isAccessoryVisible(stage: PetStage, accessory: PetAccessory) {
   if (stage === "egg" || accessory === "none") return false;
-  if (stage === "baby" && (accessory === "go_jetpack" || accessory === "rust_armor_accent")) return false;
   return true;
 }
 

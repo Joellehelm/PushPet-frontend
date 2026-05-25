@@ -1,8 +1,10 @@
 import { HeartHandshake, Trophy } from "lucide-react";
+import { normalizeColor, normalizeSpecies } from "../assets/pets/petManifest";
 import { useCommunityPet } from "../hooks/useCommunityPet";
 import type { CommunityPet } from "../types/pushpet";
 import { CaretakerControls } from "./CaretakerControls";
 import { FeedLog } from "./FeedLog";
+import { normalizePetBackground } from "./PetBackgroundControls";
 import { PetDesignControls, type PetDesign } from "./PetDesignControls";
 import { PetStageDisplay } from "./PetStageDisplay";
 import { PetStatsPanel } from "./PetStatsPanel";
@@ -39,6 +41,9 @@ export function CommunityPetCard({
   const displayMood = design.hatched ? communityPet?.mood ?? "idle" : "idle";
   const displayStage = design.hatched ? communityPet?.evolution_stage ?? "egg" : "egg";
   const displayOutfit = design.hatched ? communityPet?.outfit : null;
+  const displayEnvironment = normalizePetBackground(design.hatched ? communityPet?.environment : design.background);
+  const displaySpecies = normalizeSpecies(design.hatched ? communityPet?.species ?? design.species : design.species);
+  const displayColor = normalizeColor(design.hatched ? communityPet?.color ?? design.color : design.color);
   const backendOffline = status === "error";
   const viewCommunityPet = communityPet
     ? {
@@ -46,6 +51,7 @@ export function CommunityPetCard({
         featured_name: design.hatched ? communityPet.featured_name : "Pushpet Prime",
         display_title: design.hatched ? communityPet.display_title : "Community Pushpet",
         community_score: displayScore,
+        environment: displayEnvironment,
         level: design.hatched ? communityPet.level : 1,
         mood: displayMood,
         hunger: design.hatched ? communityPet.hunger : 45,
@@ -68,7 +74,7 @@ export function CommunityPetCard({
     : null;
 
   return (
-    <section className="toy-panel community-card">
+    <section className={`toy-panel community-card ${canCustomize ? "is-caretaker" : "is-visitor"}`}>
       <div className="panel-heading">
         <div>
           <span className="eyebrow">Community</span>
@@ -83,7 +89,7 @@ export function CommunityPetCard({
         <>
           {backendOffline && (
             <div className="offline-ribbon" role="status">
-              Backend is waking up. You can still preview the habitat.
+              {error ?? "Community API could not load. You can still preview the habitat."}
             </div>
           )}
 
@@ -92,8 +98,9 @@ export function CommunityPetCard({
             mood={displayMood}
             evolutionStage={displayStage}
             outfit={displayOutfit}
-            species={design.species}
-            color={design.color}
+            species={displaySpecies}
+            color={displayColor}
+            environment={displayEnvironment}
             size={design.hatched ? 300 : 256}
           />
 
@@ -131,21 +138,24 @@ export function CommunityPetCard({
           {design.hatched && <PetStatsPanel pet={viewCommunityPet} mode="community" />}
 
           {design.hatched && (
-            <div className="top-caretaker-strip">
-              <Trophy size={17} />
-              <span>Top Caretaker</span>
-              <strong>{viewCommunityPet.top_caretaker?.username ? `@${viewCommunityPet.top_caretaker.username}` : "open slot"}</strong>
-            </div>
-          )}
-
-          {design.hatched && canCustomize && activeUsername && (
-            <CaretakerControls
-              activeUsername={activeUsername}
-              communityPet={viewCommunityPet}
-              isSaving={status === "saving"}
-              error={error}
-              onSave={onCustomize}
-            />
+            <section className="caretaker-zone">
+              <div className="top-caretaker-strip">
+                <Trophy size={17} />
+                <span>Top Caretaker</span>
+                <strong>{viewCommunityPet.top_caretaker?.username ? `@${viewCommunityPet.top_caretaker.username}` : "open slot"}</strong>
+              </div>
+              {canCustomize && activeUsername && (
+                <CaretakerControls
+                  activeUsername={activeUsername}
+                  communityPet={viewCommunityPet}
+                  isSaving={status === "saving"}
+                  error={error}
+                  onSave={onCustomize}
+                  speciesOptions={speciesOptions}
+                  colorOptions={colorOptions}
+                />
+              )}
+            </section>
           )}
 
           {design.hatched && <FeedLog title="Community feed" items={viewCommunityPet.feed_log} />}

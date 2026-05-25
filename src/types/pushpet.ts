@@ -55,22 +55,28 @@ export type LeaderboardEntry = {
   color?: string | null;
   accessory?: string | null;
   equipped?: Record<string, string>;
+  background?: string | null;
   last_seen_at?: string;
 };
 
 export type PushpetRecord = {
   username: string;
+  display_name?: string | null;
   species: string;
   color: string;
   accessory: string;
   equipped: Record<string, string>;
+  background: string;
   hatched_at: string;
 };
 
 export type CommunityPet = {
   featured_name: string;
   display_title: string;
+  species?: string | null;
+  color?: string | null;
   outfit: string;
+  environment: string;
   community_score: number;
   level: number;
   evolution_stage: string;
@@ -110,9 +116,14 @@ export type CommunityCustomizationInput = {
   caretaker_username: string;
   title?: string;
   name?: string;
+  species?: string;
+  color?: string;
   outfit?: string;
+  environment?: string;
 };
 
 export type ApiError = {
   error: string;
+  exception?: string;
+  detail?: string;
 };

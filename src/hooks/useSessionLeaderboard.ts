@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { accessoryFromUnlock, colorFromSeed, normalizeMood, speciesFromSeed, stageFromEvolution } from "../assets/pets/petManifest";
-import type { EquippedAccessories, PetAccessory, PetColor, PetMood, PetSpecies, PetStage } from "../components/pets/petTypes";
+import { normalizePetBackground } from "../components/PetBackgroundControls";
+import type { EquippedAccessories, PetAccessory, PetBackground, PetColor, PetMood, PetSpecies, PetStage } from "../components/pets/petTypes";
 import type { IndividualPet, LeaderboardEntry } from "../types/pushpet";
 
 export type SessionLeaderboardEntry = {
@@ -15,6 +16,7 @@ export type SessionLeaderboardEntry = {
   color: PetColor;
   accessory: PetAccessory;
   equipped?: EquippedAccessories;
+  background: PetBackground;
   renderer_mood: PetMood;
 };
 
@@ -37,12 +39,13 @@ export function useSessionLeaderboard() {
         color: (entry.color as PetColor) ?? colorFromSeed(entry.username, entry.score),
         accessory: (entry.accessory as PetAccessory) ?? "none",
         equipped: entry.equipped as EquippedAccessories,
+        background: normalizePetBackground(entry.background),
         renderer_mood: normalizeMood(entry.mood ?? "curious", entry.dormancy_state ?? "thriving")
       }))
     );
   }
 
-  function recordPet(pet: IndividualPet, design?: { species: PetSpecies; color: PetColor }, accessory?: PetAccessory, equipped?: EquippedAccessories) {
+  function recordPet(pet: IndividualPet, design?: { species: PetSpecies; color: PetColor; background?: PetBackground }, accessory?: PetAccessory, equipped?: EquippedAccessories) {
     setEntries((current) => {
       const usernameKey = pet.username.toLowerCase();
       const withoutExisting = current.filter((entry) => entry.username.toLowerCase() !== usernameKey);
@@ -59,6 +62,7 @@ export function useSessionLeaderboard() {
           color: design?.color ?? colorFromSeed(pet.username, pet.pet_score),
           accessory: accessory ?? accessoryFromUnlock(pet.outfit_unlocks[0]?.id),
           equipped,
+          background: design?.background ?? "petplace1",
           renderer_mood: normalizeMood(pet.mood, pet.dormancy_state)
         },
         ...withoutExisting
